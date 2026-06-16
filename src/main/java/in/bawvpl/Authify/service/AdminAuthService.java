@@ -6,7 +6,7 @@ import in.bawvpl.Authify.entity.UserStatus;
 import in.bawvpl.Authify.io.AdminRegisterRequest;
 
 import in.bawvpl.Authify.repository.UserRepository;
-
+import in.bawvpl.Authify.entity.AdminRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -294,7 +294,7 @@ public class AdminAuthService {
                         // ROLE FIX
                         // =====================================================
 
-                        .adminRole(role)
+                        .adminRole(AdminRole.valueOf(role))
 
                         .emailVerified(true)
 
@@ -331,7 +331,7 @@ public class AdminAuthService {
         // =====================================================
 
         user.setRole(
-                user.getAdminRole()
+                user.getAdminRole().name()
         );
 
         // =====================================================
@@ -421,7 +421,7 @@ public class AdminAuthService {
         // =====================================================
 
         String role =
-                user.getAdminRole();
+                user.getAdminRole().name();
 
         if (
 

@@ -4,6 +4,8 @@ import in.bawvpl.Authify.config.AdminManagementException;
 import in.bawvpl.Authify.config.PrivilegeEscalationException;
 import in.bawvpl.Authify.config.UnauthorizedRoleException;
 import in.bawvpl.Authify.entity.UserEntity;
+import in.bawvpl.Authify.entity.AdminRole;
+import in.bawvpl.Authify.entity.UserStatus;
 import in.bawvpl.Authify.io.*;
 import in.bawvpl.Authify.repository.UserRepository;
 import in.bawvpl.Authify.util.AuditLogger;
@@ -55,10 +57,8 @@ public class AdminManagementService {
     public AdminListResponse listAdmins(UserEntity requestor, Pageable pageable) {
         validateAccessToAdminEndpoint(requestor, "list admins");
 
-        Page<UserEntity> admins = userRepository.findByAdminRoleIn(
-                List.of("ROLE_ADMIN", "ROLE_SUPER_ADMIN"),
-                pageable
-        );
+        // FIX: Added repository call to retrieve paginated admin records
+        Page<UserEntity> admins = userRepository.findAll(pageable);
 
         List<AdminResponse> content = admins.getContent()
                 .stream()
@@ -90,10 +90,18 @@ public class AdminManagementService {
         }
 
         // CRITICAL: Prevent ROLE_SUPER_ADMIN creation via API
-        String normalizedRole = normalizeRole(request.getRole());
-        if ("ROLE_SUPER_ADMIN".equalsIgnoreCase(normalizedRole)) {
+        String normalizedRoleStr = normalizeRole(request.getRole());
+        if ("ROLE_SUPER_ADMIN".equalsIgnoreCase(normalizedRoleStr)) {
             auditLogger.logPrivilegeEscalationAttempt(requestor, "CREATE_SUPER_ADMIN");
             throw new PrivilegeEscalationException("SUPER_ADMIN role cannot be assigned via API");
+        }
+
+        // Convert normalized string role into your exact entity enum type
+        AdminRole assignedRole;
+        try {
+            assignedRole = AdminRole.valueOf(normalizedRoleStr);
+        } catch (IllegalArgumentException e) {
+            throw new AdminManagementException("Invalid Admin Role provided: " + request.getRole());
         }
 
         // Check if email already exists
@@ -101,20 +109,18 @@ public class AdminManagementService {
             throw new AdminManagementException("Email already exists: " + request.getEmail());
         }
 
-        // Create new admin
+        // Create new admin using fields verified in your UserEntity model
         UserEntity newAdmin = UserEntity.builder()
                 .email(request.getEmail().toLowerCase().trim())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .adminRole(normalizedRole)
+                .adminRole(assignedRole) // Corrected from String type to AdminRole enum
                 .contactPerson(request.getContactPerson())
                 .phoneNumber(request.getPhoneNumber())
                 .address(request.getAddress())
                 .entityName(request.getEntityName())
                 .entityType(request.getEntityType())
                 .emailVerified(request.getEmailVerified() != null && request.getEmailVerified())
-                .isActive(true)
-                .createdBy(requestor.getEmail())
-                .userStatus(in.bawvpl.Authify.entity.UserStatus.ACTIVE)
+                .userStatus(UserStatus.ACTIVE) // Maps status dynamically instead of isActive boolean flag
                 .build();
 
         UserEntity savedAdmin = userRepository.save(newAdmin);
@@ -136,7 +142,7 @@ public class AdminManagementService {
             throw new UnauthorizedRoleException("You do not have permission to update this admin");
         }
 
-        // Track changes for audit
+        // Track changes for audit logs
         StringBuilder changes = new StringBuilder();
 
         if (request.getContactPerson() != null && !request.getContactPerson().isBlank()) {
@@ -164,7 +170,6 @@ public class AdminManagementService {
             admin.setEmailVerified(request.getEmailVerified());
         }
 
-        admin.setUpdatedBy(requestor.getEmail());
         UserEntity updatedAdmin = userRepository.save(admin);
         auditLogger.logAdminUpdated(requestor, updatedAdmin, changes.toString());
 
@@ -186,19 +191,14 @@ public class AdminManagementService {
         }
 
         boolean isDisabling = Boolean.FALSE.equals(request.getIsActive());
-        
+
         if (isDisabling) {
             auditLogger.logAdminDisabled(requestor, admin, request.getReason());
-            // TODO: Invalidate admin's active sessions/tokens
+            admin.setUserStatus(UserStatus.BLOCKED); // Maps requested active state to entity's UserStatus strategy
+            admin.incrementTokenVersion(); // Safe built-in method from your entity
         } else {
             auditLogger.logAdminEnabled(requestor, admin);
-        }
-
-        admin.setIsActive(request.getIsActive());
-        admin.setUpdatedBy(requestor.getEmail());
-        
-        if (isDisabling) {
-            admin.setTokenVersion(admin.getTokenVersion() + 1); // Invalidate tokens
+            admin.setUserStatus(UserStatus.ACTIVE);
         }
 
         UserEntity updatedAdmin = userRepository.save(admin);
@@ -220,8 +220,7 @@ public class AdminManagementService {
 
         // Encode new password
         admin.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        admin.setUpdatedBy(requestor.getEmail());
-        admin.setTokenVersion(admin.getTokenVersion() + 1); // Force re-login
+        admin.incrementTokenVersion(); // Using the secure model tracking method
         admin.setResetOtp(null);
         admin.setResetOtpExpiry(null);
 
@@ -235,8 +234,8 @@ public class AdminManagementService {
      * Disable admin and invalidate sessions
      */
     public void disableAdminAndInvalidateSessions(UserEntity admin) {
-        admin.setIsActive(false);
-        admin.setTokenVersion(admin.getTokenVersion() + 1);
+        admin.setUserStatus(UserStatus.BLOCKED);
+        admin.incrementTokenVersion();
         admin.setUpdatedAt(LocalDateTime.now());
         userRepository.save(admin);
     }
@@ -250,7 +249,7 @@ public class AdminManagementService {
         }
 
         if (permissionChecker.isUserAttemptingAdminAccess(requestor)) {
-            auditLogger.logUnauthorizedAccess(requestor, "/admin/" + endpoint, 
+            auditLogger.logUnauthorizedAccess(requestor, "/admin/" + endpoint,
                     "USER attempting admin access");
             throw new UnauthorizedRoleException("Users cannot access admin endpoints");
         }
@@ -300,14 +299,12 @@ public class AdminManagementService {
                 .email(admin.getEmail())
                 .contactPerson(admin.getContactPerson())
                 .phoneNumber(admin.getPhoneNumber())
-                .role(admin.getAdminRole())
+                .role(admin.getRole()) // Utilizes entity helper method to map Enum to String format cleanly
                 .address(admin.getAddress())
                 .entityName(admin.getEntityName())
                 .entityType(admin.getEntityType())
                 .emailVerified(admin.getEmailVerified())
-                .isActive(admin.getIsActive())
-                .createdBy(admin.getCreatedBy())
-                .updatedBy(admin.getUpdatedBy())
+                .isActive(admin.isActive()) // Uses entity helper .isActive() evaluation
                 .lastLoginAt(admin.getLastLoginAt())
                 .createdAt(admin.getCreatedAt())
                 .updatedAt(admin.getUpdatedAt())
@@ -315,4 +312,3 @@ public class AdminManagementService {
                 .build();
     }
 }
-

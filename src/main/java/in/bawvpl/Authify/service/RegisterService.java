@@ -6,6 +6,7 @@ import in.bawvpl.Authify.entity.UserStatus;
 import in.bawvpl.Authify.io.RegisterRequest;
 
 import in.bawvpl.Authify.repository.UserRepository;
+import in.bawvpl.Authify.entity.AdminRole;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -217,28 +218,7 @@ public class RegisterService {
             // ROLE
             // =====================================================
 
-            String role = "ROLE_USER";
-
-            if (
-
-                    "ORGANIZATION"
-                            .equalsIgnoreCase(
-                                    entityType
-                            )
-            ) {
-
-                role = "ROLE_ADMIN";
-            }
-
-            // =====================================================
-            // FORCE ROLE PREFIX
-            // =====================================================
-
-            if (!role.startsWith("ROLE_")) {
-
-                role = "ROLE_" + role;
-            }
-
+            AdminRole role = AdminRole.ROLE_USER;
             // =====================================================
             // USER ID
             // =====================================================
@@ -371,8 +351,9 @@ public class RegisterService {
             // =====================================================
 
             user.setRole(
-                    user.getAdminRole()
+                    user.getAdminRole().name()
             );
+
 
             // =====================================================
             // REFERRAL
@@ -395,24 +376,38 @@ public class RegisterService {
                         userRepository
                                 .findByReferralCode(refCode);
 
-                if (refUser.isPresent()) {
+                if (refUser.isEmpty()) {
 
-                    user.setReferredBy(refCode);
-
-                    log.info(
-                            "Referral applied from {}",
-                            refCode
-                    );
-
-                } else {
-
-                    log.warn(
-                            "Invalid referral code: {}",
-                            refCode
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Invalid referral code"
                     );
                 }
-            }
 
+                UserEntity referrer = refUser.get();
+
+                if (
+                        referrer.getEmail().equalsIgnoreCase(email)
+                ) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Self referral not allowed"
+                    );
+                }
+
+                if (
+                        referrer.getPhoneNumber() != null
+                                &&
+                                referrer.getPhoneNumber().equals(phone)
+                ) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Self referral not allowed"
+                    );
+                }
+
+                user.setReferredBy(refCode);
+            }
             // =====================================================
             // SAVE USER
             // =====================================================

@@ -98,7 +98,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
                         || path.startsWith("/api/v1.0/admin/auth/login")
 
-                        || path.startsWith("/api/v1.0/admin/auth/register")
+                        //|| path.startsWith("/api/v1.0/admin/auth/register")
+
+                        || (
+                        HttpMethod.GET.matches(request.getMethod())
+                                &&
+                                path.matches("/api/v1.0/admin/invite/[^/]+")
+                )
+
+                        || (
+                        HttpMethod.POST.matches(request.getMethod())
+                                &&
+                                path.equals("/api/v1.0/admin/invite/complete")
+                )
 
                         || path.startsWith("/api/v1.0/admin/auth/verify-otp")
 
@@ -396,12 +408,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
             try {
 
-                if (user.getRole() != null) {
+                if (user.getAdminRole() != null) {
 
-                    role =
-                            user.getRole()
-                                    .trim()
-                                    .toUpperCase();
+                    role = user.getAdminRole().name();
                 }
 
             } catch (Exception ignored) {

@@ -55,17 +55,12 @@ public class AdminAuthController {
 
     @PostMapping("/register")
     public ApiResponse<?> registerAdmin(
-
-            @RequestBody
-            AdminRegisterRequest request
+            @RequestBody AdminRegisterRequest request
     ) {
 
-        adminAuthService.registerAdmin(
-                request
-        );
-
-        return ApiResponse.successMessage(
-                "Admin registered successfully"
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "Admin registration disabled. Use invite system."
         );
     }
 
@@ -199,13 +194,10 @@ public class AdminAuthController {
         // =====================================================
 
         String role =
-                user.getAdminRole();
+                user.getAdminRole().name();
 
         if (
-
-                role == null ||
-
-                        role.isBlank()
+                role == null || role.isBlank()
 
         ) {
 
@@ -217,7 +209,17 @@ public class AdminAuthController {
             role = "ROLE_" + role;
         }
 
-        if (!"ROLE_ADMIN".equalsIgnoreCase(role)) {
+        role = role.toUpperCase();
+
+        if (
+
+                !"ROLE_ADMIN".equalsIgnoreCase(role)
+
+                        &&
+
+                        !"ROLE_OWNER".equalsIgnoreCase(role)
+
+        ) {
 
             throw new ResponseStatusException(
 

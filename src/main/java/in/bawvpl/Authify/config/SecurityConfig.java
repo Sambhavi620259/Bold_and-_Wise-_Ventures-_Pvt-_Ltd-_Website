@@ -200,7 +200,8 @@ public class SecurityConfig {
                                 // ADMIN AUTH
                                 // =====================================================
 
-                                "/api/v1.0/admin/auth/**",
+                                "/api/v1.0/admin/auth/login",
+                                "/api/v1.0/admin/auth/verify-otp",
 
                                 // =====================================================
                                 // 2FA
@@ -256,15 +257,32 @@ public class SecurityConfig {
 
                         ).permitAll()
 
+
+
+                                // =====================================================
+                                // PUBLIC ADMIN INVITE ROUTES
+                                // =====================================================
+
+                                .requestMatchers(
+                                        HttpMethod.GET,
+                                        "/api/v1.0/admin/invite/*"
+                                ).permitAll()
+
+                                .requestMatchers(
+                                        HttpMethod.POST,
+                                        "/api/v1.0/admin/invite/complete"
+                                ).permitAll()
+
                         // =====================================================
                         // ADMIN ROUTES
                         // =====================================================
 
                         .requestMatchers(
-
                                 "/api/v1.0/admin/**"
-
-                        ).hasRole("ADMIN")
+                        ).hasAnyRole(
+                                "ADMIN",
+                                "OWNER"
+                        )
 
                         // =====================================================
                         // AUTHENTICATED USER ROUTES

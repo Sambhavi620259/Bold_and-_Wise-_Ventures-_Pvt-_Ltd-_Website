@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.*;
-
+import in.bawvpl.Authify.entity.AdminRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -156,12 +156,14 @@ public class UserEntity {
     // =====================================================
 
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     @Column(
             name = "admin_role",
             nullable = false,
             length = 30
     )
-    private String adminRole = "ROLE_USER";
+    private AdminRole adminRole =
+            AdminRole.ROLE_USER;
 
     // =====================================================
     // USER STATUS
@@ -270,9 +272,8 @@ public class UserEntity {
                             .substring(0, 8)
                             .toUpperCase();
 
-    @Builder.Default
     @Column(name = "referred_by")
-    private String referredBy = "1000000";
+    private String referredBy;
 
     // =====================================================
     // PROFILE PHOTO
@@ -415,27 +416,14 @@ public class UserEntity {
 
     private void applyDefaults() {
 
-        if (
+        if (this.adminRole == null) {
 
-                this.adminRole == null ||
-
-                        this.adminRole.isBlank()
-        ) {
-
-            this.adminRole =
-                    "ROLE_USER";
-        }
-
-        if (!this.adminRole.startsWith("ROLE_")) {
-
-            this.adminRole =
-                    "ROLE_" + this.adminRole;
+            this.adminRole = AdminRole.ROLE_USER;
         }
 
         if (this.userStatus == null) {
 
-            this.userStatus =
-                    UserStatus.ACTIVE;
+            this.userStatus = UserStatus.ACTIVE;
         }
 
         if (this.emailVerified == null) {
@@ -518,17 +506,13 @@ public class UserEntity {
                     );
         }
 
-        if (
+        if (this.adminRole == null) {
 
-                this.adminRole != null &&
-
-                        !this.adminRole.startsWith("ROLE_")
-        ) {
-
-            this.adminRole =
-                    "ROLE_" + this.adminRole;
+            this.adminRole = AdminRole.ROLE_USER;
         }
-    }
+
+    } // <-- CLOSE normalizeFields()
+
 
     // =====================================================
     // URL NORMALIZER
@@ -617,18 +601,27 @@ public class UserEntity {
 
     public boolean isAdmin() {
 
-        return "ROLE_ADMIN"
-                .equalsIgnoreCase(
-                        this.adminRole
-                );
+        return this.adminRole == AdminRole.ROLE_ADMIN;
+    }
+
+    public boolean isOwner() {
+
+        return this.adminRole == AdminRole.ROLE_OWNER;
+    }
+
+    public boolean isAdminOrOwner() {
+
+        return isAdmin() || isOwner();
     }
 
     public boolean isUser() {
 
-        return "ROLE_USER"
-                .equalsIgnoreCase(
-                        this.adminRole
-                );
+        return this.adminRole == AdminRole.ROLE_USER;
+    }
+
+    public boolean isPrivilegedRole() {
+
+        return isAdmin() || isOwner();
     }
 
     // =====================================================
@@ -637,34 +630,25 @@ public class UserEntity {
 
     public String getRole() {
 
-        return this.adminRole;
+        return this.adminRole.name();
     }
 
-    public void setRole(
-            String role
-    ) {
+    public void setRole(String role) {
 
-        if (
+        if (role == null || role.isBlank()) {
 
-                role == null ||
-
-                        role.isBlank()
-        ) {
-
-            this.adminRole =
-                    "ROLE_USER";
-
+            this.adminRole = AdminRole.ROLE_USER;
             return;
         }
 
-        role = role.trim();
+        role = role.trim().toUpperCase();
 
         if (!role.startsWith("ROLE_")) {
 
             role = "ROLE_" + role;
         }
 
-        this.adminRole = role;
+        this.adminRole = AdminRole.valueOf(role);
     }
 
     // =====================================================

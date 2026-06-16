@@ -252,9 +252,9 @@ public class AdminUserService {
 
                     adminUser.setRole(
 
-                            user.getRole() != null
+                            user.getAdminRole() != null
 
-                                    ? user.getRole()
+                                    ? user.getAdminRole().name()
 
                                     : "ROLE_USER"
                     );
@@ -404,7 +404,7 @@ public class AdminUserService {
 
                 user.getAdminRole() != null
 
-                        ? user.getAdminRole()
+                        ? user.getAdminRole().name()
 
                         : "ROLE_USER"
         );

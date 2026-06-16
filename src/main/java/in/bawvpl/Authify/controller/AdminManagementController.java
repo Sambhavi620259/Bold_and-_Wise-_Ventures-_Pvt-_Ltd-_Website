@@ -4,6 +4,7 @@ import in.bawvpl.Authify.config.AdminManagementException;
 import in.bawvpl.Authify.config.PrivilegeEscalationException;
 import in.bawvpl.Authify.config.UnauthorizedRoleException;
 import in.bawvpl.Authify.entity.UserEntity;
+import in.bawvpl.Authify.entity.UserStatus;
 import in.bawvpl.Authify.io.*;
 import in.bawvpl.Authify.repository.UserRepository;
 import in.bawvpl.Authify.service.AdminManagementService;
@@ -206,8 +207,11 @@ public class AdminManagementController {
         UserEntity user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new UnauthorizedRoleException("User not found"));
 
-        if (!Boolean.TRUE.equals(user.getIsActive())) {
-            throw new UnauthorizedRoleException("Admin account is disabled");
+        if (user.getUserStatus() != UserStatus.ACTIVE) {
+
+            throw new UnauthorizedRoleException(
+                    "Admin account is disabled"
+            );
         }
 
         return user;

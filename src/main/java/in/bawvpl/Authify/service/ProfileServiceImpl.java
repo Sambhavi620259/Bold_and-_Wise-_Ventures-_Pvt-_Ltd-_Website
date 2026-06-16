@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.web.multipart.MultipartFile;
-
+import in.bawvpl.Authify.entity.AdminRole;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -205,7 +205,7 @@ public class ProfileServiceImpl implements ProfileService {
                         // FIXED
                         // =====================================================
 
-                        .adminRole("ROLE_USER")
+                        .adminRole(AdminRole.ROLE_USER)
 
                         .entityType("INDIVIDUAL")
 

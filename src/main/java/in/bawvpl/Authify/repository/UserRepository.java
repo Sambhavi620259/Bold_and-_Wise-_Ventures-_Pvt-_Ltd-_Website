@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.List;
+import in.bawvpl.Authify.entity.AdminRole;
 
 @Repository
 public interface UserRepository
@@ -154,5 +155,12 @@ public interface UserRepository
             UserStatus userStatus,
 
             String adminRole
+    );
+
+    Page<UserEntity> findByAdminRole(
+
+            AdminRole adminRole,
+
+            Pageable pageable
     );
 }
