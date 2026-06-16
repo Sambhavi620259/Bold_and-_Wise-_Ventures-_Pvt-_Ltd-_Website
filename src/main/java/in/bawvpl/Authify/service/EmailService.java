@@ -413,4 +413,106 @@ public class EmailService {
                 html
         );
     }
+    // =====================================================
+// ADMIN INVITE EMAIL
+// =====================================================
+
+    public void sendAdminInvite(
+
+            String to,
+
+            String fullName,
+
+            String inviteLink,
+
+            String role
+    ) {
+
+        String html = """
+            <div style="
+                font-family:Arial,sans-serif;
+                line-height:1.7;
+                color:#111;
+                max-width:600px;
+                margin:auto;
+                padding:20px;
+            ">
+
+                <h2 style="
+                    color:#2e6cff;
+                ">
+                    Admin Invitation
+                </h2>
+
+                <p>
+                    Hello %s,
+                </p>
+
+                <p>
+                    You have been invited to join Authify as:
+                    <strong>%s</strong>
+                </p>
+
+                <div style="
+                    margin:30px 0;
+                    text-align:center;
+                ">
+
+                    <a href="%s" style="
+                        display:inline-block;
+                        background:#2e6cff;
+                        color:#ffffff;
+                        text-decoration:none;
+                        padding:14px 28px;
+                        border-radius:8px;
+                        font-weight:600;
+                    ">
+                        Accept Invitation
+                    </a>
+
+                </div>
+
+                <p>
+                    If the button does not work,
+                    copy and paste this link:
+                </p>
+
+                <p style="
+                    word-break:break-all;
+                ">
+                    <a href="%s">%s</a>
+                </p>
+
+                <p>
+                    This invitation expires in 24 hours.
+                </p>
+
+                <br/>
+
+                <p>
+                    Regards,
+                    <br/>
+                    Authify Team
+                </p>
+
+            </div>
+            """.formatted(
+
+                fullName,
+
+                role,
+
+                inviteLink,
+
+                inviteLink,
+
+                inviteLink
+        );
+
+        sendHtmlEmail(
+                to,
+                "Admin Invitation",
+                html
+        );
+    }
 }

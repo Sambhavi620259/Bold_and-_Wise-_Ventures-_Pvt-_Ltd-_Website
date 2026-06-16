@@ -69,4 +69,22 @@ public interface OtpService {
     // =====================================================
 
     String generateOtp();
+
+    String generateAdminInviteOtp(
+            UserEntity user
+    );
+
+    void verifyAdminInviteOtp(
+            UserEntity user,
+            String otp
+    );
+
+    String generateRoleChangeOtp(
+            UserEntity user
+    );
+
+    void verifyRoleChangeOtp(
+            UserEntity user,
+            String otp
+    );
 }

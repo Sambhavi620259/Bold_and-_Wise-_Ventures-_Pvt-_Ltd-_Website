@@ -163,4 +163,12 @@ public interface UserRepository
 
             Pageable pageable
     );
+
+    // =====================================================
+    // OWNER COUNT
+    // =====================================================
+
+    long countByAdminRole(
+            AdminRole adminRole
+    );
 }

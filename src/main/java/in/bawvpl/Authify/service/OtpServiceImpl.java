@@ -581,4 +581,52 @@ public class OtpServiceImpl implements OtpService {
                 : email.trim()
                 .toLowerCase();
     }
+
+    @Override
+    @Transactional
+    public String generateAdminInviteOtp(
+            UserEntity user
+    ) {
+        return generate(
+                user,
+                "ADMIN_INVITE_ACTION"
+        );
+    }
+
+    @Override
+    @Transactional
+    public void verifyAdminInviteOtp(
+            UserEntity user,
+            String otp
+    ) {
+        validate(
+                user,
+                otp,
+                "ADMIN_INVITE_ACTION"
+        );
+    }
+
+    @Override
+    @Transactional
+    public String generateRoleChangeOtp(
+            UserEntity user
+    ) {
+        return generate(
+                user,
+                "ROLE_CHANGE_ACTION"
+        );
+    }
+
+    @Override
+    @Transactional
+    public void verifyRoleChangeOtp(
+            UserEntity user,
+            String otp
+    ) {
+        validate(
+                user,
+                otp,
+                "ROLE_CHANGE_ACTION"
+        );
+    }
 }
