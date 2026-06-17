@@ -9,9 +9,7 @@ public class AdminInviteRequest {
 
     private String fullName;
 
-    /**
-     * ADMIN
-     * OWNER
-     */
     private String role;
+
+    private String inviteActionToken;
 }

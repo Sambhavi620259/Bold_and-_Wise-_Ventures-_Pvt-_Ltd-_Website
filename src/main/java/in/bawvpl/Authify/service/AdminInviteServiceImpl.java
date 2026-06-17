@@ -12,7 +12,7 @@ import in.bawvpl.Authify.repository.UserRepository;
 import in.bawvpl.Authify.util.AdminOtpPurpose;
 import in.bawvpl.Authify.util.InviteTokenUtil;
 import in.bawvpl.Authify.util.RoleValidator;
-
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -56,7 +56,7 @@ public class AdminInviteServiceImpl
     }
 
     @Override
-    public void verifyInviteOtp(
+    public String verifyInviteOtp(
             UserEntity inviter,
             String otp
     ) {
@@ -66,10 +66,16 @@ public class AdminInviteServiceImpl
                 otp
         );
 
+        String actionToken =
+                UUID.randomUUID().toString();
+
         adminOtpVerificationService.markVerified(
                 inviter.getId(),
-                AdminOtpPurpose.ADMIN_INVITE_ACTION
+                AdminOtpPurpose.ADMIN_INVITE_ACTION,
+                actionToken
         );
+
+        return actionToken;
     }
 
     @Override
@@ -83,16 +89,11 @@ public class AdminInviteServiceImpl
                 request.getRole()
         );
 
-        if (!adminOtpVerificationService.isVerified(
+        adminOtpVerificationService.validateActionToken(
                 inviter.getId(),
+                request.getInviteActionToken(),
                 AdminOtpPurpose.ADMIN_INVITE_ACTION
-        )) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.FORBIDDEN,
-                    "OTP verification required"
-            );
-        }
+        );
 
         List<AdminInviteEntity> activeInvites =
                 adminInviteRepository
@@ -166,9 +167,8 @@ public class AdminInviteServiceImpl
                 role.name()
         );
 
-        adminOtpVerificationService.consumeVerification(
-                inviter.getId(),
-                AdminOtpPurpose.ADMIN_INVITE_ACTION
+        adminOtpVerificationService.consumeActionToken(
+                request.getInviteActionToken()
         );
 
         // ✅ EMAIL DISPATCH IMPLEMENTATION

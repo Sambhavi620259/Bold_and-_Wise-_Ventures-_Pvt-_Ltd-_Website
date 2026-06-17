@@ -49,12 +49,18 @@ public class AdminRoleServiceImpl implements AdminRoleService {
         }
 
         // Validate OTP signature
-        otpService.verifyRoleChangeOtp(requestor, otp);
+        otpService.verifyRoleChangeOtp(
+                requestor,
+                otp
+        );
 
-        // Commit verification confirmation state
+        String actionToken =
+                java.util.UUID.randomUUID().toString();
+
         adminOtpVerificationService.markVerified(
                 requestor.getId(),
-                AdminOtpPurpose.ROLE_CHANGE_ACTION
+                AdminOtpPurpose.ROLE_CHANGE_ACTION,
+                actionToken
         );
     }
 

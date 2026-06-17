@@ -19,6 +19,7 @@ public class OtpVerification {
     private Long id;
 
     // ================= USER =================
+
     @Column(name = "user_id")
     private Long userId;
 
@@ -29,13 +30,19 @@ public class OtpVerification {
     private String phoneNumber;
 
     // ================= OTP =================
+
     @Column(length = 10, nullable = false)
     private String otp;
 
-    @Column(length = 20, nullable = false)
+    @Column(
+            name = "purpose",
+            nullable = false,
+            length = 64
+    )
     private String purpose;
 
     // ================= SECURITY =================
+
     @Column(name = "expiry_time", nullable = false)
     private LocalDateTime expiryTime;
 
@@ -43,7 +50,6 @@ public class OtpVerification {
     @Column(name = "is_used", nullable = false)
     private Boolean isUsed = false;
 
-    // 🔥 NEW FIELDS (FIX YOUR ERROR)
     @Builder.Default
     @Column(name = "attempts", nullable = false)
     private Integer attempts = 0;
@@ -52,11 +58,18 @@ public class OtpVerification {
     private LocalDateTime lastSentAt;
 
     // ================= TIMESTAMP =================
+
     @Builder.Default
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(
+            name = "created_at",
+            nullable = false,
+            updatable = false
+    )
+    private LocalDateTime createdAt =
+            LocalDateTime.now();
 
     // ================= AUTO =================
+
     @PrePersist
     public void prePersist() {
 

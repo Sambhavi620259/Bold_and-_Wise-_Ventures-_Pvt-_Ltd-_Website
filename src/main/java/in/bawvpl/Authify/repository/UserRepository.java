@@ -2,6 +2,7 @@ package in.bawvpl.Authify.repository;
 
 import in.bawvpl.Authify.entity.UserEntity;
 import in.bawvpl.Authify.entity.UserStatus;
+import in.bawvpl.Authify.entity.AdminRole;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,10 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import org.springframework.stereotype.Repository;
-
+import in.bawvpl.Authify.entity.AdminRole;
 import java.util.Optional;
 import java.util.List;
-import in.bawvpl.Authify.entity.AdminRole;
 
 @Repository
 public interface UserRepository
@@ -135,26 +135,19 @@ public interface UserRepository
     );
 
     // =====================================================
-    // ACTIVE NORMAL USERS ONLY
-    //
-    // IMPORTANT:
+    // ACTIVE NORMAL USERS ONLY (TYPED ENUM QUERY)
     //
     // Uses:
-    // - adminRole
-    //
-    // NOT:
-    // - role
+    // - adminRole (Enum type)
     //
     // MUST exclude:
     // - ROLE_ADMIN
     // - ROLE_SUPER_ADMIN
     // =====================================================
 
-    long countByUserStatusAndAdminRoleIgnoreCase(
-
+    long countByUserStatusAndAdminRole(
             UserStatus userStatus,
-
-            String adminRole
+            AdminRole adminRole
     );
 
     Page<UserEntity> findByAdminRole(

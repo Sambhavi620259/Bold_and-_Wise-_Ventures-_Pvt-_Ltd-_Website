@@ -17,6 +17,11 @@ public interface AdminOtpVerificationRepository
             String purpose
     );
 
+    Optional<AdminOtpVerificationEntity>
+    findByActionToken(
+            String actionToken
+    );
+
     void deleteByUserIdAndPurpose(
             Long userId,
             String purpose

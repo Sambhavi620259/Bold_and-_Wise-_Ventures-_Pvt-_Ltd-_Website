@@ -5,8 +5,10 @@ import in.bawvpl.Authify.repository.AdminOtpVerificationRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 
@@ -16,35 +18,30 @@ import java.time.LocalDateTime;
 public class AdminOtpVerificationServiceImpl
         implements AdminOtpVerificationService {
 
+
     private final AdminOtpVerificationRepository
-            adminOtpVerificationRepository;
+            repository;
 
     @Override
     public void markVerified(
             Long userId,
-            String purpose
+            String purpose,
+            String actionToken
     ) {
 
-        adminOtpVerificationRepository
-                .deleteByUserIdAndPurpose(
-                        userId,
-                        purpose
-                );
+        repository.deleteByUserIdAndPurpose(
+                userId,
+                purpose
+        );
 
-        AdminOtpVerificationEntity verification =
+        AdminOtpVerificationEntity entity =
                 AdminOtpVerificationEntity.builder()
 
-                        .userId(
-                                userId
-                        )
+                        .userId(userId)
 
-                        .purpose(
-                                purpose
-                        )
+                        .purpose(purpose)
 
-                        .verified(
-                                true
-                        )
+                        .verified(true)
 
                         .verifiedAt(
                                 LocalDateTime.now()
@@ -52,38 +49,44 @@ public class AdminOtpVerificationServiceImpl
 
                         .expiresAt(
                                 LocalDateTime.now()
-                                        .plusMinutes(15)
+                                        .plusMinutes(5)
                         )
+
+                        .actionToken(
+                                actionToken
+                        )
+
+                        .consumed(false)
 
                         .build();
 
-        adminOtpVerificationRepository.save(
-                verification
-        );
+        repository.save(entity);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean isVerified(
             Long userId,
             String purpose
     ) {
 
-        return adminOtpVerificationRepository
-
+        return repository
                 .findFirstByUserIdAndPurposeOrderByVerifiedAtDesc(
                         userId,
                         purpose
                 )
-
                 .filter(AdminOtpVerificationEntity::getVerified)
-
+                .filter(v ->
+                        !Boolean.TRUE.equals(
+                                v.getConsumed()
+                        )
+                )
                 .filter(v ->
                         v.getExpiresAt()
                                 .isAfter(
                                         LocalDateTime.now()
                                 )
                 )
-
                 .isPresent();
     }
 
@@ -93,10 +96,118 @@ public class AdminOtpVerificationServiceImpl
             String purpose
     ) {
 
-        adminOtpVerificationRepository
-                .deleteByUserIdAndPurpose(
+        repository
+                .findFirstByUserIdAndPurposeOrderByVerifiedAtDesc(
                         userId,
                         purpose
-                );
+                )
+                .ifPresent(v -> {
+
+                    v.setConsumed(true);
+
+                    v.setConsumedAt(
+                            LocalDateTime.now()
+                    );
+
+                    repository.save(v);
+                });
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public void validateActionToken(
+            Long userId,
+            String actionToken,
+            String purpose
+    ) {
+
+        AdminOtpVerificationEntity entity =
+                repository
+                        .findByActionToken(
+                                actionToken
+                        )
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "Invalid action token"
+                                )
+                        );
+
+        if (!entity.getUserId().equals(userId)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Token does not belong to user"
+            );
+        }
+
+        if (!purpose.equals(entity.getPurpose())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Invalid token purpose"
+            );
+        }
+
+        if (!Boolean.TRUE.equals(
+                entity.getVerified()
+        )) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "OTP not verified"
+            );
+        }
+
+        if (Boolean.TRUE.equals(
+                entity.getConsumed()
+        )) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Token already consumed"
+            );
+        }
+
+        if (
+                entity.getExpiresAt()
+                        .isBefore(
+                                LocalDateTime.now()
+                        )
+        ) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Token expired"
+            );
+        }
+    }
+
+    @Override
+    public void consumeActionToken(
+            String actionToken
+    ) {
+
+        AdminOtpVerificationEntity entity =
+                repository
+                        .findByActionToken(
+                                actionToken
+                        )
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.FORBIDDEN,
+                                        "Invalid action token"
+                                )
+                        );
+
+        entity.setConsumed(true);
+
+        entity.setConsumedAt(
+                LocalDateTime.now()
+        );
+
+        repository.save(entity);
+    }
+
+
 }

@@ -4,7 +4,8 @@ public interface AdminOtpVerificationService {
 
     void markVerified(
             Long userId,
-            String purpose
+            String purpose,
+            String actionToken
     );
 
     boolean isVerified(
@@ -16,4 +17,15 @@ public interface AdminOtpVerificationService {
             Long userId,
             String purpose
     );
+
+    void validateActionToken(
+            Long userId,
+            String actionToken,
+            String purpose
+    );
+
+    void consumeActionToken(
+            String actionToken
+    );
+
 }

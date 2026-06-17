@@ -12,7 +12,7 @@ import in.bawvpl.Authify.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
+import in.bawvpl.Authify.entity.AdminRole;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -58,11 +58,11 @@ public class AdminDashboardService {
             activeUsers =
 
                     userRepository
-                            .countByUserStatusAndAdminRoleIgnoreCase(
+                            .countByUserStatusAndAdminRole(
 
                                     UserStatus.ACTIVE,
 
-                                    "ROLE_USER"
+                                    AdminRole.ROLE_USER
                             );
 
         } catch (Exception ex) {

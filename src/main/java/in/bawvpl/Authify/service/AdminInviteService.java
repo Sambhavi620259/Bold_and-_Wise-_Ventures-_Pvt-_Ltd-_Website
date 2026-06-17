@@ -11,7 +11,7 @@ public interface AdminInviteService {
             UserEntity inviter
     );
 
-    void verifyInviteOtp(
+    String verifyInviteOtp(
             UserEntity inviter,
             String otp
     );

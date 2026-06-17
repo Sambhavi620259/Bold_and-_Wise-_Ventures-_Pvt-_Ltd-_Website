@@ -61,15 +61,23 @@ public class AdminInviteController {
             AdminOtpRequest request
     ) {
 
-        adminInviteService.verifyInviteOtp(
-                getCurrentUser(principal),
-                request.getOtp()
-        );
+        String actionToken =
+                adminInviteService.verifyInviteOtp(
+                        getCurrentUser(principal),
+                        request.getOtp()
+                );
 
         return ResponseEntity.ok(
                 Map.of(
-                        "message",
-                        "OTP verified"
+                        "success", true,
+                        "message", "OTP verified",
+                        "data",
+                        Map.of(
+                                "inviteActionToken",
+                                actionToken,
+                                "expiresIn",
+                                300
+                        )
                 )
         );
     }
