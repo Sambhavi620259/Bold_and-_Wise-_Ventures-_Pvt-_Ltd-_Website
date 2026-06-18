@@ -501,6 +501,25 @@ public class AdminUsersController {
                         ? kyc.getDrivingLicenseUrl()
                         : null;
 
+        String referredByUserId = null;
+
+        if (user.getReferredBy() != null) {
+
+            try {
+
+                Long referrerEntityId =
+                        Long.valueOf(user.getReferredBy());
+
+                referredByUserId =
+                        userRepository
+                                .findByEntityId(referrerEntityId)
+                                .map(UserEntity::getUserId)
+                                .orElse(null);
+
+            } catch (Exception ignored) {
+            }
+        }
+
         String selfieUrl =
                 kyc != null
                         ? kyc.getSelfieUrl()
@@ -526,6 +545,8 @@ public class AdminUsersController {
                         .userId(
                                 user.getUserId()
                         )
+
+                        .referredByUserId(referredByUserId)
 
                         // =====================================================
                         // USER

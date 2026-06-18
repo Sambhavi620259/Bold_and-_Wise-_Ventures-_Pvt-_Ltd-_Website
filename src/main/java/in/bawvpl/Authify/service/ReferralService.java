@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.List;
 import java.util.UUID;
-
+import in.bawvpl.Authify.io.ReferralUserResponse;
 @Service
 @RequiredArgsConstructor
 public class ReferralService {
@@ -72,5 +72,22 @@ public class ReferralService {
         return userRepository.findByReferredBy(
                 String.valueOf(entityId)
         );
+    }
+    public List<ReferralUserResponse> getReferralResponses(
+            Long entityId
+    ) {
+
+        return userRepository
+                .findByReferredBy(
+                        String.valueOf(entityId)
+                )
+                .stream()
+                .map(user ->
+                        ReferralUserResponse.builder()
+                                .userId(user.getUserId())
+                                .fullName(user.getDisplayName())
+                                .build()
+                )
+                .toList();
     }
 }

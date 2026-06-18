@@ -89,12 +89,11 @@ public class ReferralController {
                         .findByEmailIgnoreCase(email)
                         .orElseThrow();
 
-        List<UserEntity> referrals =
-                referralService.getReferrals(
+        return ResponseEntity.ok(
+                referralService.getReferralResponses(
                         user.getEntityId()
-                );
-
-        return ResponseEntity.ok(referrals);
+                )
+        );
     }
 
     // =====================================================

@@ -292,6 +292,8 @@ public class SecurityConfig {
 
                                 "/api/v1.0/profile/**",
 
+                                "/api/v1.0/referrals/**",
+
                                 "/api/v1.0/settings/**",
 
                                 "/api/v1.0/activity/**",

@@ -23,6 +23,12 @@ public class AdminUser {
     private String userId;
 
     // =====================================================
+// REFERRAL
+// =====================================================
+
+    private String referredByUserId;
+
+    // =====================================================
     // USER
     // =====================================================
 
@@ -33,6 +39,8 @@ public class AdminUser {
     private String email;
 
     private String phoneNumber;
+
+
 
     // =====================================================
     // ROLE
