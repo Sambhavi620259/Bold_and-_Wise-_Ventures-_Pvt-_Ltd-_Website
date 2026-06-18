@@ -376,7 +376,9 @@ public class SecurityConfig {
 
                         "https://43.205.116.38",
 
-                        "https://boldandwise.duckdns.org/"
+                        "https://boldandwise.duckdns.org/",
+                        "https://bw-main-portal.vercel.app"
+
                 )
         );
 

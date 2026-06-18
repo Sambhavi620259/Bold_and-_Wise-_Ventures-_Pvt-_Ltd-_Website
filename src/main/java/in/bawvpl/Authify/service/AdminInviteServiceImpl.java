@@ -170,13 +170,19 @@ public class AdminInviteServiceImpl
         adminOtpVerificationService.consumeActionToken(
                 request.getInviteActionToken()
         );
-
+        System.out.println(
+                "FRONTEND_BASE_URL = "
+                        + frontendBaseUrl
+        );
         // ✅ EMAIL DISPATCH IMPLEMENTATION
         String inviteLink =
                 frontendBaseUrl +
                         "/admin/invite/" +
                         rawToken;
-
+        System.out.println(
+                "GENERATED_INVITE_LINK = "
+                        + inviteLink
+        );
         emailService.sendAdminInvite(
                 request.getEmail(),
                 request.getFullName(),
