@@ -360,21 +360,15 @@ public class RegisterService {
             // =====================================================
 
             if (
-
                     req.getReferralCode() != null &&
-
                             !req.getReferralCode().isBlank()
             ) {
 
                 String refCode =
-
-                        req.getReferralCode()
-                                .trim();
+                        req.getReferralCode().trim();
 
                 Optional<UserEntity> refUser =
-
-                        userRepository
-                                .findByReferralCode(refCode);
+                        userRepository.findByReferralCode(refCode);
 
                 if (refUser.isEmpty()) {
 
@@ -406,7 +400,10 @@ public class RegisterService {
                     );
                 }
 
-                user.setReferredBy(refCode);
+                referralService.applyReferral(
+                        user,
+                        refCode
+                );
             }
             // =====================================================
             // SAVE USER

@@ -5,7 +5,9 @@ import in.bawvpl.Authify.entity.UserEntity;
 import in.bawvpl.Authify.entity.UserStatus;
 
 import in.bawvpl.Authify.io.*;
-
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Value;
 import in.bawvpl.Authify.repository.KycRepository;
 import in.bawvpl.Authify.repository.UserRepository;
 
@@ -17,6 +19,7 @@ import jakarta.validation.Valid;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+//import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 import in.bawvpl.Authify.io.ForgotPasswordRequest;
@@ -63,12 +66,54 @@ public class AuthController {
 
     private final NotificationService notificationService;
 
+    private final UserSessionService userSessionService;
+
+    private final LoginAttemptService loginAttemptService;
+
     // =====================================================
     // BASE URL
     // =====================================================
 
-    private static final String BASE_URL =
-            "http://43.205.116.38:8080";
+    @Value("${asset.base-url}")
+    private String BASE_URL;
+
+    private void validatePassword(String password) {
+
+        if (password == null || password.length() < 8) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must be at least 8 characters"
+            );
+        }
+
+        if (!password.matches(".*[A-Z].*")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must contain uppercase letter"
+            );
+        }
+
+        if (!password.matches(".*[a-z].*")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must contain lowercase letter"
+            );
+        }
+
+        if (!password.matches(".*\\d.*")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must contain number"
+            );
+        }
+
+        if (!password.matches(".*[@$!%*?&].*")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Password must contain special character"
+            );
+        }
+    }
 
     // =====================================================
     // REGISTER
@@ -131,11 +176,19 @@ public class AuthController {
                 );
             }
 
-            String email =
-                    request.getEmail()
-                            .trim()
-                            .toLowerCase();
+                String email =
+                        request.getEmail()
+                                .trim()
+                                .toLowerCase();
+            if(loginAttemptService.isBlocked(email)){
 
+                return ResponseEntity
+                        .status(HttpStatus.TOO_MANY_REQUESTS)
+                        .body(Map.of(
+                                "success",false,
+                                "message","Account temporarily locked. Try again later."
+                        ));
+            }
             // =====================================================
             // EMAIL EXISTS
             // =====================================================
@@ -373,7 +426,7 @@ public class AuthController {
                                 Your email has been verified successfully.
                             </p>
 
-                            <a href="http://43.205.116.38:5173/login">
+                            <a href="https://43.205.116.38:5173/login">
                                 Go Back To Login
                             </a>
 
@@ -505,6 +558,8 @@ public class AuthController {
                     )
             ) {
 
+                loginAttemptService.loginFailed(email);
+
                 return ResponseEntity
                         .status(HttpStatus.UNAUTHORIZED)
                         .body(
@@ -628,8 +683,9 @@ public class AuthController {
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(
 
-            @Valid
-            @RequestBody VerifyOtpRequest request
+            @RequestBody VerifyOtpRequest request,
+
+            HttpServletRequest httpRequest
     ) {
 
         try {
@@ -663,6 +719,9 @@ public class AuthController {
 
                     request.getOtp()
             );
+            loginAttemptService.loginSucceeded(user.getEmail());
+
+
 
 
 
@@ -749,6 +808,18 @@ public class AuthController {
                     jwtUtil.generateRefreshToken(
                             user.getEmail()
                     );
+
+            String userAgent = httpRequest.getHeader("User-Agent");
+
+            String ipAddress = httpRequest.getRemoteAddr();
+
+            userSessionService.createSession(
+                    user.getId(),
+                    token,
+                    "Unknown Device",
+                    ipAddress,
+                    userAgent
+            );
 
             // =====================================
             // SAVE REFRESH TOKEN
@@ -1227,6 +1298,8 @@ public class AuthController {
                     request.getOtp()
             );
 
+            validatePassword(request.getNewPassword());
+
             user.setPassword(
                     passwordEncoder.encode(
                             request.getNewPassword()
@@ -1235,6 +1308,8 @@ public class AuthController {
 
             user.incrementTokenVersion();
             user.setRefreshToken(null);
+            userSessionService.logoutAll(user.getId());
+
             userRepository.save(user);
 
             return ResponseEntity.ok(
@@ -1269,5 +1344,39 @@ public class AuthController {
         private String password;
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(
+            HttpServletRequest request,
+            Authentication authentication
+    ) {
+
+        String token = request.getHeader("Authorization");
+
+        if (token != null && token.startsWith("Bearer ")) {
+
+            token = token.substring(7);
+
+            userSessionService.logout(token);
+        }
+
+        UserEntity user =
+                userRepository.findByEmailIgnoreCase(authentication.getName())
+                        .orElseThrow();
+
+        user.setRefreshToken(null);
+
+        user.incrementTokenVersion();
+
+        userSessionService.logoutAll(user.getId());
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "success", true,
+                        "message", "Logout successful"
+                )
+        );
+    }
 
 }

@@ -304,6 +304,20 @@ public class ProfileController {
                                     user.getPhoneNumber()
                             )
 
+                            .companyName(user.getCompanyName())
+
+                            .designation(user.getDesignation())
+
+                            .address(user.getAddress())
+
+                            .city(user.getCity())
+
+                            .state(user.getState())
+
+                            .country(user.getCountry())
+
+                            .postalCode(user.getPostalCode())
+
                             .accountVerified(
 
                                     Boolean.TRUE.equals(
@@ -454,6 +468,29 @@ public class ProfileController {
 
             String oldPhone =
                     user.getPhoneNumber();
+            if (body.containsKey("companyName") && body.get("companyName") != null) {
+                user.setCompanyName(body.get("companyName").trim());
+            }
+
+            if (body.containsKey("designation") && body.get("designation") != null) {
+                user.setDesignation(body.get("designation").trim());
+            }
+
+            if (body.containsKey("city") && body.get("city") != null) {
+                user.setCity(body.get("city").trim());
+            }
+
+            if (body.containsKey("state") && body.get("state") != null) {
+                user.setState(body.get("state").trim());
+            }
+
+            if (body.containsKey("country") && body.get("country") != null) {
+                user.setCountry(body.get("country").trim());
+            }
+
+            if (body.containsKey("postalCode") && body.get("postalCode") != null) {
+                user.setPostalCode(body.get("postalCode").trim());
+            }
 
             // =====================================================
             // NAME

@@ -283,17 +283,19 @@ public class AdminAuthController {
 
         session.setActive(true);
 
-        session.setIp(
+        session.setIpAddress(
                 httpRequest.getRemoteAddr()
         );
 
-        session.setDevice(
-                httpRequest.getHeader(
-                        "User-Agent"
-                )
+        session.setDeviceName(
+                httpRequest.getHeader("User-Agent")
         );
 
-        session.setCreatedAt(
+        session.setLoginTime(
+                LocalDateTime.now()
+        );
+
+        session.setLastAccessTime(
                 LocalDateTime.now()
         );
 

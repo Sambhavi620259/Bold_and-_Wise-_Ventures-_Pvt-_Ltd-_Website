@@ -34,10 +34,13 @@ public class UserSession {
 
     // ================= DEVICE INFO =================
     @Column(name = "ip_address", length = 50)
-    private String ip;
+    private String ipAddress;
 
-    @Column(length = 300) // 🔥 increased for long user-agent
-    private String device;
+    @Column(name = "device_name", length = 300)
+    private String deviceName;
+
+    @Column(name = "user_agent", length = 500)
+    private String userAgent;
 
     // ================= STATUS =================
     @Builder.Default
@@ -46,14 +49,22 @@ public class UserSession {
 
     // ================= TIMESTAMP =================
     @Column(name = "login_time", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime loginTime;
 
+    @Column(name = "last_access_time")
+    private LocalDateTime lastAccessTime;
     // ================= AUTO =================
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+
+        if (loginTime == null) {
+            loginTime = LocalDateTime.now();
         }
+
+        if (lastAccessTime == null) {
+            lastAccessTime = LocalDateTime.now();
+        }
+
         if (active == null) {
             active = true;
         }

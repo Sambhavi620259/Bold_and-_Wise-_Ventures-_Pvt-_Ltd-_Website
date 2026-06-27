@@ -355,6 +355,24 @@ public class UserEntity {
     private LocalDateTime updatedAt =
             LocalDateTime.now();
 
+    @Column(length = 150)
+    private String companyName;
+
+    @Column(length = 100)
+    private String designation;
+
+    @Column(length = 100)
+    private String city;
+
+    @Column(length = 100)
+    private String state;
+
+    @Column(length = 100)
+    private String country;
+
+    @Column(length = 20)
+    private String postalCode;
+
     // =====================================================
     // ENTITY LIFECYCLE
     // =====================================================
@@ -511,7 +529,27 @@ public class UserEntity {
             this.adminRole = AdminRole.ROLE_USER;
         }
 
+        if(companyName!=null)
+            companyName=companyName.trim();
+
+        if(designation!=null)
+            designation=designation.trim();
+
+        if(city!=null)
+            city=city.trim();
+
+        if(state!=null)
+            state=state.trim();
+
+        if(country!=null)
+            country=country.trim();
+
+        if(postalCode!=null)
+            postalCode=postalCode.trim();
+
     } // <-- CLOSE normalizeFields()
+
+
 
 
     // =====================================================

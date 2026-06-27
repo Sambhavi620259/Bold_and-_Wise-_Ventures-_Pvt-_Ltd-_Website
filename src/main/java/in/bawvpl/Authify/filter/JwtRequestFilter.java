@@ -5,6 +5,7 @@ import in.bawvpl.Authify.entity.UserStatus;
 
 import in.bawvpl.Authify.repository.UserRepository;
 
+import in.bawvpl.Authify.service.UserSessionService;
 import in.bawvpl.Authify.util.JwtUtil;
 
 import jakarta.servlet.FilterChain;
@@ -42,6 +43,7 @@ import java.util.List;
 public class JwtRequestFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserSessionService userSessionService;
 
     private final UserRepository userRepository;
 
@@ -237,6 +239,16 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 unauthorized(
                         response,
                         "Token missing"
+                );
+
+                return;
+            }
+
+            if (!userSessionService.isActive(jwt)) {
+
+                unauthorized(
+                        response,
+                        "Session expired"
                 );
 
                 return;

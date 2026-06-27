@@ -78,6 +78,20 @@ public class ProfileResponse {
 
     private Kyc kyc;
 
+    private String companyName;
+
+    private String designation;
+
+    private String address;
+
+    private String city;
+
+    private String state;
+
+    private String country;
+
+    private String postalCode;
+
     // =====================================================
     // NORMALIZATION
     // =====================================================

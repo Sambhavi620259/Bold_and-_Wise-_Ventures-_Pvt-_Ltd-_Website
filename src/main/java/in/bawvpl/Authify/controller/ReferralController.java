@@ -89,11 +89,27 @@ public class ReferralController {
                         .findByEmailIgnoreCase(email)
                         .orElseThrow();
 
-        return ResponseEntity.ok(
+        Map<String, Object> response =
+                new HashMap<>();
+
+        response.put(
+                "success",
+                true
+        );
+
+        response.put(
+                "status",
+                200
+        );
+
+        response.put(
+                "data",
                 referralService.getReferralResponses(
                         user.getEntityId()
                 )
         );
+
+        return ResponseEntity.ok(response);
     }
 
     // =====================================================

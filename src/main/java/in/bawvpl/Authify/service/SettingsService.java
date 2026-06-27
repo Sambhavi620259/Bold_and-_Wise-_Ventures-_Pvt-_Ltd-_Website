@@ -159,6 +159,26 @@ public class SettingsService {
                 passwordEncoder.encode(newPassword)
         );
 
+// Invalidate all JWTs
+        user.incrementTokenVersion();
+
+// Remove refresh token
+        user.setRefreshToken(null);
+
+// Logout from all devices
+        sessionRepo.deactivateAllByUserId(user.getId());
+
+// Save changes
+        userRepository.save(user);
+
+        audit(
+                user.getId(),
+                "PASSWORD_CHANGED",
+                null
+        );
+
+        sessionRepo.deactivateAllByUserId(user.getId());
+
         userRepository.save(user);
 
         audit(
@@ -173,24 +193,27 @@ public class SettingsService {
     // =====================================================
 
     @Transactional
-    public void logoutAll(
-            String email
-    ) {
+    public void logoutAll(String email) {
 
-        UserEntity user =
-                getUser(email);
+        UserEntity user = getUser(email);
 
-        Integer version =
-                user.getTokenVersion() == null
+        Integer version = user.getTokenVersion() == null
+                ? 0
+                : user.getTokenVersion();
 
-                        ? 0
-
-                        : user.getTokenVersion();
-
+        // Invalidate all access tokens
         user.setTokenVersion(version + 1);
 
+        // Remove refresh token
+        user.setRefreshToken(null);
+
+        // Deactivate all login sessions
+        sessionRepo.deactivateAllByUserId(user.getId());
+
+        // Save user
         userRepository.save(user);
 
+        // Audit log
         audit(
                 user.getId(),
                 "LOGOUT_ALL",

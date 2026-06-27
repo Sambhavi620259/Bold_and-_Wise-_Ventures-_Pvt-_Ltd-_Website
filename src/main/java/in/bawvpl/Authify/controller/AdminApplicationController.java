@@ -6,6 +6,7 @@ import in.bawvpl.Authify.io.ApplicationResponse;
 import in.bawvpl.Authify.io.ApplicationUpdateRequest;
 import in.bawvpl.Authify.service.AppService;
 import in.bawvpl.Authify.service.AuditService;
+import in.bawvpl.Authify.service.S3Service; // Added S3 service import
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -27,13 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-
-import org.springframework.util.StringUtils;
-
 @RestController
 @RequestMapping("/api/v1.0/admin/apps")
 @RequiredArgsConstructor
@@ -43,6 +37,7 @@ public class AdminApplicationController {
 
     private final AppService appService;
     private final AuditService auditService;
+    private final S3Service s3Service; // Injected via Lombok RequiredArgsConstructor
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -183,59 +178,20 @@ public class AdminApplicationController {
             validateFile(logoFile);
             validateFile(bannerFile);
 
-            Path logoDir =
-                    Paths.get(
-
-                            System.getProperty("user.dir"),
-
-                            "uploads",
-
-                            "apps",
-
-                            "logos"
-                    );
-
-            Path bannerDir =
-                    Paths.get(
-
-                            System.getProperty("user.dir"),
-
-                            "uploads",
-
-                            "apps",
-
-                            "banners"
-                    );
-
-            Files.createDirectories(logoDir);
-            Files.createDirectories(bannerDir);
-
             // =====================================================
             // STORAGE IMPLEMENTATION
             // =====================================================
             String logoUrl = null;
             String bannerUrl = null;
 
-            // ✅ SANITIZED LOGO SAVE BLOCK
+            // ✅ S3 LOGO SAVE BLOCK
             if (logoFile != null && !logoFile.isEmpty()) {
-                String rawFilename = logoFile.getOriginalFilename();
-                String logoFilename = System.currentTimeMillis() + "_" +
-                        (rawFilename != null ? StringUtils.cleanPath(rawFilename) : "logo");
-
-                Path logoPath = logoDir.resolve(logoFilename);
-                logoFile.transferTo(logoPath.toFile());
-                logoUrl = "/uploads/apps/logos/" + logoFilename;
+                logoUrl = s3Service.uploadAppImage(logoFile);
             }
 
-            // ✅ SANITIZED BANNER SAVE BLOCK
+            // ✅ S3 BANNER SAVE BLOCK
             if (bannerFile != null && !bannerFile.isEmpty()) {
-                String rawFilename = bannerFile.getOriginalFilename();
-                String bannerFilename = System.currentTimeMillis() + "_" +
-                        (rawFilename != null ? StringUtils.cleanPath(rawFilename) : "banner");
-
-                Path bannerPath = bannerDir.resolve(bannerFilename);
-                bannerFile.transferTo(bannerPath.toFile());
-                bannerUrl = "/uploads/apps/banners/" + bannerFilename;
+                bannerUrl = s3Service.uploadAppBanner(bannerFile);
             }
 
             // =====================================================
@@ -255,7 +211,7 @@ public class AdminApplicationController {
             // AUDIT LOG
             // =====================================================
             auditService.log(1L, "APP_ASSETS_UPDATED", "Uploaded assets for app id: " + id, request);
-            log.info("Assets uploaded for application id: {}", id);
+            log.info("Assets uploaded to S3 cloud for application id: {}", id);
 
             return ResponseEntity.ok(
                     ApiResponse.builder()

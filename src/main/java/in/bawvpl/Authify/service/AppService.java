@@ -57,7 +57,7 @@ public class AppService {
     private final AppUsageLogRepository appUsageLogRepository;
 
     private static final String BASE_URL =
-            "http://43.205.116.38:8080";
+            "https://43.205.116.38:8080";
 
     // =====================================================
     // CREATE APP
