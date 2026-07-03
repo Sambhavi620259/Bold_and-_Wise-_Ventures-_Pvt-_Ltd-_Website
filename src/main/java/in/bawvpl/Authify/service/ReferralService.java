@@ -54,17 +54,15 @@ public class ReferralService {
             String referralCode
     ) {
 
-        if (
-                referralCode == null ||
-                        referralCode.isBlank()
-        ) {
-            return;
+        // Founder default referral
+        if (referralCode == null || referralCode.isBlank()) {
+            referralCode = "BWVPL#26";
         }
 
+        referralCode = referralCode.trim();
+
         Optional<UserEntity> referrer =
-                userRepository.findByReferralCode(
-                        referralCode.trim()
-                );
+                userRepository.findByReferralCode(referralCode);
 
         if (referrer.isEmpty()) {
             return;

@@ -41,6 +41,12 @@ public class AdminUserResponse {
     private String phoneNumber;
 
     // =====================================================
+    // ENTITY TYPE
+    // =====================================================
+
+    private String entityType;
+
+    // =====================================================
     // DOCUMENT URLS
     // =====================================================
 
@@ -258,5 +264,15 @@ public class AdminUserResponse {
 
             this.openTicketsCount = 0L;
         }
+
+        // =====================================================
+        // ENTITY TYPE DEFAULT
+        // =====================================================
+
+        if (this.entityType == null || this.entityType.isBlank()) {
+            this.entityType = "INDIVIDUAL";
+        }
     }
+
+
 }

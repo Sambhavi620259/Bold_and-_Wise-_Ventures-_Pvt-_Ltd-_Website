@@ -36,6 +36,18 @@ public class AdminAuditLogEntity {
     @Column(name = "new_role")
     private String newRole;
 
+    @Column(name = "old_email")
+    private String oldEmail;
+
+    @Column(name = "new_email")
+    private String newEmail;
+
+    @Column(name = "old_phone")
+    private String oldPhone;
+
+    @Column(name = "new_phone")
+    private String newPhone;
+
     @Builder.Default
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt =

@@ -82,4 +82,54 @@ public class AdminAuditLogServiceImpl
                 log
         );
     }
+    @Override
+    public void logEmailChange(
+            Long performedBy,
+            Long targetUserId,
+            String oldEmail,
+            String newEmail
+    ) {
+
+        AdminAuditLogEntity log =
+                AdminAuditLogEntity.builder()
+
+                        .action("EMAIL_CHANGED")
+
+                        .performedBy(performedBy)
+
+                        .targetUserId(targetUserId)
+
+                        .oldEmail(oldEmail)
+
+                        .newEmail(newEmail)
+
+                        .build();
+
+        adminAuditLogRepository.save(log);
+    }
+    @Override
+    public void logPhoneChange(
+            Long performedBy,
+            Long targetUserId,
+            String oldPhone,
+            String newPhone
+    ) {
+
+        AdminAuditLogEntity log =
+                AdminAuditLogEntity.builder()
+
+                        .action("PHONE_CHANGED")
+
+                        .performedBy(performedBy)
+
+                        .targetUserId(targetUserId)
+
+                        .oldPhone(oldPhone)
+
+                        .newPhone(newPhone)
+
+                        .build();
+
+        adminAuditLogRepository.save(log);
+    }
 }

@@ -14,4 +14,18 @@ public interface AdminAuditLogService {
             String email,
             String role
     );
+
+    void logEmailChange(
+            Long performedBy,
+            Long targetUserId,
+            String oldEmail,
+            String newEmail
+    );
+
+    void logPhoneChange(
+            Long performedBy,
+            Long targetUserId,
+            String oldPhone,
+            String newPhone
+    );
 }

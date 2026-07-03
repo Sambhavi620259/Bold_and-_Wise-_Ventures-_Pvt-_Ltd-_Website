@@ -40,14 +40,11 @@ import java.util.stream.Collectors;
 public class AdminUsersController {
 
     private static final Set<String> VALID_STATUSES = Set.of(
-
             "ACTIVE",
-
-            "INACTIVE",
-
+            "PENDING",
             "BLOCKED",
-
-            "SUSPENDED"
+            "SUSPENDED",
+            "DELETED"
     );
 
     private final UserRepository userRepository;
@@ -319,19 +316,58 @@ public class AdminUsersController {
         }
 
         // =====================================================
+// UPDATE EMAIL
+// =====================================================
+
+        if (request.getEmail() != null &&
+                !request.getEmail().isBlank()) {
+
+            String email =
+                    request.getEmail()
+                            .trim()
+                            .toLowerCase();
+
+            if (userRepository.existsByEmailIgnoreCase(email)
+                    && !email.equalsIgnoreCase(user.getEmail())) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Email already exists"
+                );
+            }
+
+            user.setEmail(email);
+
+            // Invalidate JWT
+            user.incrementTokenVersion();
+
+            // Remove refresh token
+            user.setRefreshToken(null);
+
+            // Logout all sessions
+            userSessionRepository.deactivateAllByUserId(user.getId());
+        }
+
+        // =====================================================
         // UPDATE PHONE
         // =====================================================
 
-        if (
+        if (request.getPhoneNumber() != null &&
+                !request.getPhoneNumber().isBlank()) {
 
-                request.getPhoneNumber() != null &&
+            String phone =
+                    request.getPhoneNumber().trim();
 
-                        !request.getPhoneNumber().isBlank()
-        ) {
+            if (userRepository.existsByPhoneNumber(phone)
+                    && !phone.equals(user.getPhoneNumber())) {
 
-            user.setPhoneNumber(
-                    request.getPhoneNumber().trim()
-            );
+                throw new ResponseStatusException(
+                        HttpStatus.CONFLICT,
+                        "Phone number already exists"
+                );
+            }
+
+            user.setPhoneNumber(phone);
         }
 
         // =====================================================
@@ -470,11 +506,9 @@ public class AdminUsersController {
         // =====================================================
 
         String role =
-                user.getRole() != null
-
-                        ? user.getRole()
-
-                        : "USER";
+                user.getAdminRole() != null
+                        ? user.getAdminRole().name()
+                        : "ROLE_USER";
 
         // =====================================================
         // DOCUMENT URLS
@@ -587,6 +621,8 @@ public class AdminUsersController {
                                 user.getPhoneNumber()
                         )
 
+                        .entityType(user.getEntityType())
+
                         // =====================================================
                         // STATUS
                         // =====================================================
@@ -696,6 +732,8 @@ public class AdminUsersController {
     public static class UpdateUserRequest {
 
         private String name;
+
+        private String email;
 
         private String phoneNumber;
 

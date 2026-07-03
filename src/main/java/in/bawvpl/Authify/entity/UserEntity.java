@@ -90,13 +90,7 @@ public class UserEntity {
             updatable = false,
             length = 20
     )
-    private String userId =
-            "USR-" +
-
-                    UUID.randomUUID()
-                            .toString()
-                            .substring(0, 8)
-                            .toUpperCase();
+    private String userId = null;
 
     // =====================================================
     // ENTITY ID
@@ -264,13 +258,7 @@ public class UserEntity {
             unique = true,
             length = 20
     )
-    private String referralCode =
-            "REF" +
-
-                    UUID.randomUUID()
-                            .toString()
-                            .substring(0, 8)
-                            .toUpperCase();
+    private String referralCode = null;
 
     @Column(
             name = "referred_by",
@@ -618,10 +606,19 @@ public class UserEntity {
 
     private String generateUserId() {
 
-        return "USR-" +
+        String prefix = "USR-";
+
+        if (this.entityType != null
+                && this.entityType.equalsIgnoreCase("ORGANIZATION")) {
+
+            prefix = "ORG-";
+        }
+
+        return prefix +
 
                 UUID.randomUUID()
                         .toString()
+                        .replace("-", "")
                         .substring(0, 8)
                         .toUpperCase();
     }
@@ -657,7 +654,8 @@ public class UserEntity {
 
     public boolean isUser() {
 
-        return this.adminRole == AdminRole.ROLE_USER;
+        return this.adminRole == AdminRole.ROLE_USER
+                || this.adminRole == AdminRole.ROLE_ORG;
     }
 
     public boolean isPrivilegedRole() {

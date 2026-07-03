@@ -218,17 +218,27 @@ public class RegisterService {
             // ROLE
             // =====================================================
 
-            AdminRole role = AdminRole.ROLE_USER;
+            AdminRole role;
+
+            if ("ORGANIZATION".equalsIgnoreCase(entityType)) {
+                role = AdminRole.ROLE_ORG;
+            } else {
+                role = AdminRole.ROLE_USER;
+            }
             // =====================================================
             // USER ID
             // =====================================================
 
+            String prefix =
+                    "ORGANIZATION".equalsIgnoreCase(entityType)
+                            ? "ORG-"
+                            : "USR-";
+
             String userId =
-
-                    "USR-" +
-
+                    prefix +
                             UUID.randomUUID()
                                     .toString()
+                                    .replace("-", "")
                                     .substring(0, 8)
                                     .toUpperCase();
 
@@ -359,52 +369,45 @@ public class RegisterService {
             // REFERRAL
             // =====================================================
 
-            if (
-                    req.getReferralCode() != null &&
-                            !req.getReferralCode().isBlank()
-            ) {
+            String refCode = "BWVPL#26";
 
-                String refCode =
-                        req.getReferralCode().trim();
+            if (req.getReferralCode() != null &&
+                    !req.getReferralCode().isBlank()) {
 
-                Optional<UserEntity> refUser =
-                        userRepository.findByReferralCode(refCode);
+                refCode = req.getReferralCode().trim();
+            }
 
-                if (refUser.isEmpty()) {
+            Optional<UserEntity> refUser =
+                    userRepository.findByReferralCode(refCode);
 
-                    throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Invalid referral code"
-                    );
-                }
+            if (refUser.isEmpty()) {
 
-                UserEntity referrer = refUser.get();
-
-                if (
-                        referrer.getEmail().equalsIgnoreCase(email)
-                ) {
-                    throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Self referral not allowed"
-                    );
-                }
-
-                if (
-                        referrer.getPhoneNumber() != null
-                                &&
-                                referrer.getPhoneNumber().equals(phone)
-                ) {
-                    throw new ResponseStatusException(
-                            HttpStatus.BAD_REQUEST,
-                            "Self referral not allowed"
-                    );
-                }
-
-                referralService.applyReferral(
-                        user,
-                        refCode
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Invalid referral code"
                 );
             }
+
+            UserEntity referrer = refUser.get();
+
+            if (referrer.getEmail().equalsIgnoreCase(email)) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Self referral not allowed"
+                );
+            }
+
+            if (referrer.getPhoneNumber() != null &&
+                    referrer.getPhoneNumber().equals(phone)) {
+
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Self referral not allowed"
+                );
+            }
+
+            referralService.applyReferral(user, refCode);
             // =====================================================
             // SAVE USER
             // =====================================================
