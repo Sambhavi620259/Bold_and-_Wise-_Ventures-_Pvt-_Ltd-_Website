@@ -1,15 +1,10 @@
 package in.bawvpl.Authify.controller;
 
-import in.bawvpl.Authify.entity.KycEntity;
-import in.bawvpl.Authify.entity.TicketEntity;
-import in.bawvpl.Authify.entity.UserEntity;
-import in.bawvpl.Authify.entity.UserStatus;
+import in.bawvpl.Authify.entity.*;
 
 import in.bawvpl.Authify.io.AdminUserResponse;
 
-import in.bawvpl.Authify.repository.KycRepository;
-import in.bawvpl.Authify.repository.TicketRepository;
-import in.bawvpl.Authify.repository.UserRepository;
+import in.bawvpl.Authify.repository.*;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -22,9 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import in.bawvpl.Authify.entity.UserProfileHistory;
 import in.bawvpl.Authify.io.AdminUserHistoryResponse;
-import in.bawvpl.Authify.repository.UserProfileHistoryRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,6 +57,8 @@ public class AdminUsersController {
     private final KycRepository kycRepository;
 
     private final TicketRepository ticketRepository;
+
+    private final UserSessionRepository userSessionRepository;
 
     // =====================================================
     // GET USERS
@@ -174,8 +169,8 @@ public class AdminUsersController {
     }
 
     // =====================================================
-    // UPDATE USER STATUS
-    // =====================================================
+// UPDATE USER STATUS
+// =====================================================
 
     @PatchMapping("/users/{id}/status")
     public ResponseEntity<String> updateStatus(
@@ -191,25 +186,50 @@ public class AdminUsersController {
         UserEntity user =
                 userRepository
                         .findById(id)
-
                         .orElseThrow(() ->
-
                                 new ResponseStatusException(
-
                                         HttpStatus.NOT_FOUND,
-
                                         "User not found"
                                 )
                         );
 
-        String status =
-                validateStatus(
-                        request.getStatus()
-                );
+        String status = validateStatus(request.getStatus());
 
-        user.setUserStatus(
-                UserStatus.valueOf(status)
-        );
+        UserStatus newStatus = UserStatus.valueOf(status);
+
+        // =====================================================
+        // OWNER PROTECTION
+        // =====================================================
+
+        if (user.getAdminRole() == AdminRole.ROLE_OWNER
+                && (newStatus == UserStatus.BLOCKED
+                || newStatus == UserStatus.SUSPENDED)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Cannot deactivate OWNER"
+            );
+        }
+
+        // =====================================================
+        // UPDATE STATUS
+        // =====================================================
+
+        user.setUserStatus(newStatus);
+
+        // =====================================================
+        // LOGOUT USER ONLY WHEN BLOCKED/SUSPENDED
+        // =====================================================
+
+        if (newStatus == UserStatus.BLOCKED
+                || newStatus == UserStatus.SUSPENDED) {
+
+            user.incrementTokenVersion();
+
+            user.setRefreshToken(null);
+
+            userSessionRepository.deactivateAllByUserId(user.getId());
+        }
 
         userRepository.save(user);
 
@@ -217,7 +237,6 @@ public class AdminUsersController {
                 "User status updated successfully"
         );
     }
-
     // =====================================================
 // USER HISTORY
 // =====================================================

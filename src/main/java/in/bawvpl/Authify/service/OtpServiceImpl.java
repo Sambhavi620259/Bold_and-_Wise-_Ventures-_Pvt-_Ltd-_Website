@@ -453,7 +453,14 @@ public class OtpServiceImpl implements OtpService {
                                         "OTP not found"
                                 )
                         );
-
+        System.out.println("====================================");
+        System.out.println("Email       : " + email);
+        System.out.println("Purpose     : " + purpose);
+        System.out.println("DB OTP      : " + entity.getOtp());
+        System.out.println("Entered OTP : " + otp);
+        System.out.println("Is Used     : " + entity.getIsUsed());
+        System.out.println("Attempts    : " + entity.getAttempts());
+        System.out.println("====================================");
         // =====================================================
         // MAX ATTEMPTS
         // =====================================================

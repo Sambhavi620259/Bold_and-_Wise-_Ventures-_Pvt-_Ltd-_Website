@@ -111,18 +111,21 @@ public class SettingsController {
                         .build()
         );
     }
-
-    // ================= DEACTIVATE ACCOUNT =================
+            // ================= DEACTIVATE ACCOUNT =================
     @PutMapping("/deactivate")
-    public ResponseEntity<ApiResponse<String>> deactivate(Authentication auth) {
+    public ResponseEntity<ApiResponse<Object>> deactivate(Authentication auth) {
 
         settingsService.deactivate(getEmail(auth));
 
         return ResponseEntity.ok(
-                ApiResponse.<String>builder()
+                ApiResponse.builder()
                         .status(200)
                         .message("Account deactivated")
-                        .data(null)
+                        .data(Map.of(
+                                "status", "SUSPENDED",
+                                "logoutRequired", true,
+                                "refreshUser", true
+                        ))
                         .build()
         );
     }

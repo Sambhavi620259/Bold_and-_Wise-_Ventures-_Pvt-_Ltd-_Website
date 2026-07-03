@@ -272,7 +272,10 @@ public class UserEntity {
                             .substring(0, 8)
                             .toUpperCase();
 
-    @Column(name = "referred_by")
+    @Column(
+            name = "referred_by",
+            nullable = true
+    )
     private String referredBy;
 
     // =====================================================

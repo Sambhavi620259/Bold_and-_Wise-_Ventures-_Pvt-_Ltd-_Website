@@ -159,28 +159,19 @@ public class SettingsService {
                 passwordEncoder.encode(newPassword)
         );
 
-// Invalidate all JWTs
+        // Invalidate all JWTs
         user.incrementTokenVersion();
 
-// Remove refresh token
+        // Remove refresh token
         user.setRefreshToken(null);
 
-// Logout from all devices
+        // Logout from all devices
         sessionRepo.deactivateAllByUserId(user.getId());
 
-// Save changes
-        userRepository.save(user);
+        // Save changes
+        userRepository.saveAndFlush(user);
 
-        audit(
-                user.getId(),
-                "PASSWORD_CHANGED",
-                null
-        );
-
-        sessionRepo.deactivateAllByUserId(user.getId());
-
-        userRepository.save(user);
-
+        // Audit
         audit(
                 user.getId(),
                 "PASSWORD_CHANGED",
@@ -230,19 +221,27 @@ public class SettingsService {
             String email
     ) {
 
-        UserEntity user =
-                getUser(email);
+        UserEntity user = getUser(email);
 
-        // =====================================================
-        // FIXED ENUM
-        // =====================================================
+        if (user.getUserStatus() == UserStatus.SUSPENDED) {
+            return;
+        }
 
-        user.setUserStatus(
-                UserStatus.SUSPENDED
-        );
+        user.setUserStatus(UserStatus.SUSPENDED);
 
-        userRepository.save(user);
+        // Invalidate JWT
+        user.incrementTokenVersion();
 
+        // Remove refresh token
+        user.setRefreshToken(null);
+
+        // Logout from all devices
+        sessionRepo.deactivateAllByUserId(user.getId());
+
+        // Save immediately
+        userRepository.saveAndFlush(user);
+
+        // Audit
         audit(
                 user.getId(),
                 "ACCOUNT_DEACTIVATED",

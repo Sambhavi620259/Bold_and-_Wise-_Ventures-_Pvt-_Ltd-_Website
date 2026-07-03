@@ -244,7 +244,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 return;
             }
 
-            if (!userSessionService.isActive(jwt)) {
+            boolean active = userSessionService.isActive(jwt);
+
+// Debug logs
+            System.out.println("=================================");
+            System.out.println("JWT Token      : " + jwt);
+            System.out.println("Session Active : " + active);
+            System.out.println("=================================");
+
+            if (!active) {
 
                 unauthorized(
                         response,
