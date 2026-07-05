@@ -654,8 +654,7 @@ public class UserEntity {
 
     public boolean isUser() {
 
-        return this.adminRole == AdminRole.ROLE_USER
-                || this.adminRole == AdminRole.ROLE_ORG;
+        return this.adminRole == AdminRole.ROLE_USER;
     }
 
     public boolean isPrivilegedRole() {

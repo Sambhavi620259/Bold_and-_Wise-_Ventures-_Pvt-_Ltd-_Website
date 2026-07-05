@@ -32,6 +32,8 @@ import in.bawvpl.Authify.entity.AdminRole;
 import java.util.HashMap;
 import java.util.Map;
 
+
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -155,14 +157,17 @@ public class ProfileServiceImpl implements ProfileService {
         // =====================================================
         // USER
         // =====================================================
+        String prefix = "USR-";
 
+        if ("ORGANIZATION".equalsIgnoreCase(request.getEntityType())) {
+            prefix = "ORG-";
+        }
         UserEntity user =
                 UserEntity.builder()
 
+
                         .userId(
-
-                                "USR-" +
-
+                                prefix +
                                         UUID.randomUUID()
                                                 .toString()
                                                 .substring(0, 8)
@@ -207,7 +212,11 @@ public class ProfileServiceImpl implements ProfileService {
 
                         .adminRole(AdminRole.ROLE_USER)
 
-                        .entityType("INDIVIDUAL")
+                        .entityType(
+                                request.getEntityType() == null
+                                        ? "INDIVIDUAL"
+                                        : request.getEntityType().trim().toUpperCase()
+                        )
 
                         .address(
                                 safe(
@@ -246,31 +255,31 @@ public class ProfileServiceImpl implements ProfileService {
                         )
 
                         .build();
-        if (
-                request.getReferralCode() != null &&
-                        !request.getReferralCode().isBlank()
-        ) {
+        String referralCode = request.getReferralCode();
 
-            Optional<UserEntity> refUser =
-                    userRepository.findByReferralCode(
-                            request.getReferralCode().trim()
-                    );
+        if (referralCode == null || referralCode.isBlank()) {
+            referralCode = "BWVPL#26";
+        }
 
-            if (refUser.isPresent()) {
-
-                user.setReferredBy(
-                        String.valueOf(
-                                refUser.get().getEntityId()
-                        )
+        Optional<UserEntity> refUser =
+                userRepository.findByReferralCode(
+                        referralCode.trim()
                 );
 
-            } else {
+        if (refUser.isPresent()) {
 
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Invalid referral code"
-                );
-            }
+            user.setReferredBy(
+                    String.valueOf(
+                            refUser.get().getEntityId()
+                    )
+            );
+
+        } else {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid referral code"
+            );
         }
 
         user =
@@ -682,6 +691,12 @@ public class ProfileServiceImpl implements ProfileService {
 
                         .email(
                                 user.getEmail()
+                        )
+
+                        .role(
+                                user.getAdminRole() != null
+                                        ? user.getAdminRole().name()
+                                        : "ROLE_USER"
                         )
 
                         .phoneNumber(

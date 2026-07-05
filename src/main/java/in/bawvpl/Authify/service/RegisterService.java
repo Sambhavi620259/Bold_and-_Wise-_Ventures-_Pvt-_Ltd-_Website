@@ -218,13 +218,7 @@ public class RegisterService {
             // ROLE
             // =====================================================
 
-            AdminRole role;
-
-            if ("ORGANIZATION".equalsIgnoreCase(entityType)) {
-                role = AdminRole.ROLE_ORG;
-            } else {
-                role = AdminRole.ROLE_USER;
-            }
+            AdminRole role = AdminRole.ROLE_USER;
             // =====================================================
             // USER ID
             // =====================================================

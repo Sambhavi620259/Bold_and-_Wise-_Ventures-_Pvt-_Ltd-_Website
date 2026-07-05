@@ -102,10 +102,27 @@ public class ProfileRequest {
     private String documentUrl;
 
     // =====================================================
+    // ENTITY TYPE
+    // INDIVIDUAL / ORGANIZATION
+    // =====================================================
+
+    private String entityType;
+
+    // =====================================================
     // NORMALIZATION
     // =====================================================
 
     public void normalize() {
+
+        // =====================================================
+    // ENTITY TYPE
+    // =====================================================
+
+        if (this.entityType == null || this.entityType.isBlank()) {
+            this.entityType = "INDIVIDUAL";
+        } else {
+            this.entityType = this.entityType.trim().toUpperCase();
+        }
 
         // =====================================================
         // FULL NAME

@@ -29,7 +29,7 @@ public class ReferralService {
         do {
 
             code =
-                    "REF" +
+                    "REF-" +
                             UUID.randomUUID()
                                     .toString()
                                     .replace("-", "")

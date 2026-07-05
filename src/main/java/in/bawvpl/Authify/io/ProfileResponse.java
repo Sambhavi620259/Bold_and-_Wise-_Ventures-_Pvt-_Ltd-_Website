@@ -29,6 +29,18 @@ public class ProfileResponse {
     private String phoneNumber;
 
     // =====================================================
+    // ROLE
+    // =====================================================
+
+    private String role;
+
+    // =====================================================
+    // ENTITY TYPE
+    // =====================================================
+
+    private String entityType;
+
+    // =====================================================
     // VERIFICATION
     // =====================================================
 
@@ -242,6 +254,14 @@ public class ProfileResponse {
 
         public void normalize() {
 
+            if (this.documentUrl == null && this.filePath != null) {
+                this.documentUrl = this.filePath;
+            }
+
+            if (this.status == null || this.status.isBlank()) {
+                this.status = "PENDING";
+            }
+
             if (
 
                     this.documentUrl == null &&
@@ -261,6 +281,8 @@ public class ProfileResponse {
 
                 this.status = "PENDING";
             }
+
+
         }
     }
 }

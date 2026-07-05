@@ -303,6 +303,17 @@ public class ProfileController {
                             .phoneNumber(
                                     user.getPhoneNumber()
                             )
+                            .role(
+                                    user.getAdminRole() != null
+                                            ? user.getAdminRole().name()
+                                            : "ROLE_USER"
+                            )
+
+                            .entityType(
+                                    user.getEntityType() != null
+                                            ? user.getEntityType()
+                                            : "INDIVIDUAL"
+                            )
 
                             .companyName(user.getCompanyName())
 

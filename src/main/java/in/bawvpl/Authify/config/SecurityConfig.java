@@ -25,6 +25,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.web.SecurityFilterChain;
 
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -379,7 +381,7 @@ public class SecurityConfig {
 
                         "https://43.205.116.38",
 
-                        "https://boldandwise.duckdns.org/",
+                        "https://boldandwise.duckdns.org",
                         "https://bw-main-portal.vercel.app"
 
                 )
@@ -450,5 +452,18 @@ public class SecurityConfig {
         );
 
         return source;
+    }
+
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+
+        hierarchy.setHierarchy("""
+            ROLE_OWNER > ROLE_ADMIN
+            ROLE_ADMIN > ROLE_USER
+            """);
+
+        return hierarchy;
     }
 }
