@@ -753,7 +753,11 @@ public class AuthController {
                                     (
                                             u.getRole().equalsIgnoreCase("ROLE_ADMIN") ||
 
-                                                    u.getRole().equalsIgnoreCase("ADMIN")
+                                                    u.getRole().equalsIgnoreCase("ROLE_OWNER") ||
+
+                                                    u.getRole().equalsIgnoreCase("ADMIN") ||
+
+                                                    u.getRole().equalsIgnoreCase("OWNER")
                                     )
                     )
 

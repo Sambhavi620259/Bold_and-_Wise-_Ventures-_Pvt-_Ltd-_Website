@@ -123,7 +123,11 @@ public class TicketService {
                                 (
                                         u.getRole().equalsIgnoreCase("ROLE_ADMIN") ||
 
-                                                u.getRole().equalsIgnoreCase("ADMIN")
+                                                u.getRole().equalsIgnoreCase("ROLE_OWNER") ||
+
+                                                u.getRole().equalsIgnoreCase("ADMIN") ||
+
+                                                u.getRole().equalsIgnoreCase("OWNER")
                                 )
                 )
 
@@ -780,8 +784,11 @@ public class TicketService {
 
                         .anyMatch(auth ->
 
-                                auth.getAuthority()
-                                        .equals("ROLE_ADMIN")
+                                auth.getAuthority().equals("ROLE_ADMIN")
+
+                                        ||
+
+                                        auth.getAuthority().equals("ROLE_OWNER")
                         );
     }
 

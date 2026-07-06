@@ -27,6 +27,7 @@ public class AdminUserResponse {
     // ===================================================== // REFERRAL
     // =====================================================
     private String referredByUserId;
+    private String referredBy;
 
     // =====================================================
     // USER
@@ -99,6 +100,7 @@ public class AdminUserResponse {
 
     @Builder.Default
     private String status = "ACTIVE";
+    private String userStatus;
 
     // =====================================================
     // ACTIVE
@@ -271,6 +273,21 @@ public class AdminUserResponse {
 
         if (this.entityType == null || this.entityType.isBlank()) {
             this.entityType = "INDIVIDUAL";
+        }
+        // =====================================================
+        // USER STATUS FALLBACK
+        // =====================================================
+
+        if (this.userStatus == null || this.userStatus.isBlank()) {
+            this.userStatus = this.status;
+        }
+
+        // =====================================================
+        // REFERRED BY FALLBACK
+        // =====================================================
+
+        if (this.referredBy == null) {
+            this.referredBy = this.referredByUserId;
         }
     }
 

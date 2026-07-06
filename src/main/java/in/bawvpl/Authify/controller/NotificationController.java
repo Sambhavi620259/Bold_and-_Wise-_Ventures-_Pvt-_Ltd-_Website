@@ -156,7 +156,7 @@ public class NotificationController {
 // ADMIN NOTIFICATIONS
 // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/admin")
     public ResponseEntity<ApiResponse<?>> getAdminNotifications(
 

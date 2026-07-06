@@ -75,7 +75,7 @@ public class ApplicationController {
     // CREATE APP
     // =====================================================
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @PostMapping
     public ResponseEntity<ApiResponse<ApplicationResponse>> create(
 
@@ -712,7 +712,7 @@ public class ApplicationController {
     // UPDATE APP
     // =====================================================
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<ApplicationResponse>> update(
 
@@ -810,7 +810,7 @@ public class ApplicationController {
     // DELETE APP
     // =====================================================
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Object>> delete(
             @PathVariable Long id
@@ -1063,7 +1063,7 @@ public class ApplicationController {
                     );
         }
     }
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @PostMapping("/{id}/upload-logo")
     public ResponseEntity<ApiResponse<ApplicationResponse>> uploadLogo(
 
@@ -1114,7 +1114,7 @@ public class ApplicationController {
         }
     }
 
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN','ROLE_OWNER')")
     @PostMapping("/{id}/upload-banner")
     public ResponseEntity<ApiResponse<ApplicationResponse>> uploadBanner(
 

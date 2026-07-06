@@ -48,7 +48,7 @@ public class AdminKycController {
     // GET ALL KYC
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/all")
     public ResponseEntity<AdminApiResponse<List<AdminKycResponse>>> getAllKyc() {
 
@@ -69,7 +69,7 @@ public class AdminKycController {
     // GET PENDING KYC
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/pending")
     public ResponseEntity<AdminApiResponse<List<AdminKycResponse>>> getPendingKyc() {
 
@@ -90,7 +90,7 @@ public class AdminKycController {
     // GET KYC BY USER ID
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/{kycId:\\d+}")
     public ResponseEntity<AdminApiResponse<AdminKycResponse>> getKycById(
             @PathVariable Long kycId
@@ -122,7 +122,7 @@ public class AdminKycController {
     // VERIFY KYC
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @PutMapping("/verify/{kycId:\\d+}")
     public ResponseEntity<AdminApiResponse<String>> verifyKyc(
 
@@ -215,7 +215,7 @@ public class AdminKycController {
     // REJECT KYC
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @PutMapping("/reject/{kycId:\\d+}")
     public ResponseEntity<AdminApiResponse<String>> rejectKyc(
 
@@ -603,7 +603,7 @@ public class AdminKycController {
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/presign")
     public ResponseEntity<AdminApiResponse<String>> getPresignedUrl(
             @RequestParam String storedUrl

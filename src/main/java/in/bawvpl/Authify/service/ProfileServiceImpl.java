@@ -269,9 +269,7 @@ public class ProfileServiceImpl implements ProfileService {
         if (refUser.isPresent()) {
 
             user.setReferredBy(
-                    String.valueOf(
-                            refUser.get().getEntityId()
-                    )
+                    refUser.get().getUserId()
             );
 
         } else {
@@ -285,6 +283,10 @@ public class ProfileServiceImpl implements ProfileService {
         user =
                 userRepository.save(user);
 
+        user.setReferralCode(user.getUserId());
+
+        user =
+                userRepository.save(user);
         // =====================================================
         // KYC
         // =====================================================
@@ -699,6 +701,12 @@ public class ProfileServiceImpl implements ProfileService {
                                         : "ROLE_USER"
                         )
 
+                        .entityType(
+                                user.getEntityType() != null
+                                        ? user.getEntityType()
+                                        : "INDIVIDUAL"
+                        )
+
                         .phoneNumber(
                                 user.getPhoneNumber()
                         )
@@ -729,9 +737,7 @@ public class ProfileServiceImpl implements ProfileService {
                                 kycStatus
                         )
 
-                        .referralCode(
-                                user.getReferralCode()
-                        )
+                        .referralCode(user.getReferralCode())
 
                         .photoUrl(
                                 photoUrl

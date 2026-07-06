@@ -312,7 +312,11 @@ public class NotificationService {
 
                                         user.getRole().equalsIgnoreCase("ROLE_ADMIN") ||
 
-                                                user.getRole().equalsIgnoreCase("ADMIN")
+                                                user.getRole().equalsIgnoreCase("ROLE_OWNER") ||
+
+                                                user.getRole().equalsIgnoreCase("ADMIN") ||
+
+                                                user.getRole().equalsIgnoreCase("OWNER")
                                 )
                 )
 

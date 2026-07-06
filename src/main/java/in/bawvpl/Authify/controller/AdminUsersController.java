@@ -4,8 +4,10 @@ import in.bawvpl.Authify.entity.*;
 
 import in.bawvpl.Authify.io.AdminUserResponse;
 
+import in.bawvpl.Authify.io.RoleUpdateRequest;
 import in.bawvpl.Authify.repository.*;
 
+import in.bawvpl.Authify.service.AdminRoleService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
@@ -36,7 +38,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1.0/admin")
 @RequiredArgsConstructor
 //@CrossOrigin("*")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','OWNER')")
 public class AdminUsersController {
 
     private static final Set<String> VALID_STATUSES = Set.of(
@@ -56,7 +58,7 @@ public class AdminUsersController {
     private final TicketRepository ticketRepository;
 
     private final UserSessionRepository userSessionRepository;
-
+    private final AdminRoleService adminRoleService;
     // =====================================================
     // GET USERS
     // IMPORTANT:
@@ -140,11 +142,10 @@ public class AdminUsersController {
                                             : "";
 
                             return !role.equalsIgnoreCase("ADMIN") &&
-
                                     !role.equalsIgnoreCase("ROLE_ADMIN") &&
-
+                                    !role.equalsIgnoreCase("OWNER") &&
+                                    !role.equalsIgnoreCase("ROLE_OWNER") &&
                                     !role.equalsIgnoreCase("SUPER_ADMIN") &&
-
                                     !role.equalsIgnoreCase("ROLE_SUPER_ADMIN");
                         })
 
@@ -316,8 +317,8 @@ public class AdminUsersController {
         }
 
         // =====================================================
-// UPDATE EMAIL
-// =====================================================
+        // UPDATE EMAIL
+        // =====================================================
 
         if (request.getEmail() != null &&
                 !request.getEmail().isBlank()) {
@@ -601,6 +602,8 @@ public class AdminUsersController {
 
                         .referredByUserId(referredByUserId)
 
+                        .referredBy(referredByUserId)
+
                         // =====================================================
                         // USER
                         // =====================================================
@@ -632,6 +635,10 @@ public class AdminUsersController {
                         )
 
                         .status(
+                                status
+                        )
+
+                        .userStatus(
                                 status
                         )
 
@@ -739,4 +746,40 @@ public class AdminUsersController {
 
         private String status;
     }
+
+    @PatchMapping("/users/{id}/role")
+    public ResponseEntity<?> updateRole(
+
+            java.security.Principal principal,
+
+            @PathVariable Long id,
+
+            @RequestBody RoleUpdateRequest request
+    ) {
+
+        UserEntity currentUser =
+                userRepository
+                        .findByEmailIgnoreCase(principal.getName())
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "Admin not found"
+                                )
+                        );
+
+        adminRoleService.changeRole(
+                currentUser,
+                id,
+                request.getRole()
+        );
+
+        return ResponseEntity.ok(
+                java.util.Map.of(
+                        "message",
+                        "Role updated"
+                )
+        );
+    }
+
+
 }

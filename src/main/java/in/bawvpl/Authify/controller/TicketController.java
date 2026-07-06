@@ -220,7 +220,7 @@ public class TicketController {
     // ADMIN USER-SCOPED TICKETS
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/admin")
     public ResponseEntity<ApiResponse<?>> adminTickets(
 
@@ -321,7 +321,7 @@ public class TicketController {
     // ADMIN TICKETS COMPATIBILITY ENDPOINT
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/admin/tickets")
     public ResponseEntity<ApiResponse<?>> adminTicketsCompat(
 
@@ -593,7 +593,7 @@ public class TicketController {
     // UPDATE TICKET STATUS
     // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @PatchMapping("/{ticketId}/status")
     public ResponseEntity<ApiResponse<String>> updateStatus(
 

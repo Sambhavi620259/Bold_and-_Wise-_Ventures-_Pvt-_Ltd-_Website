@@ -419,18 +419,13 @@ public class AdminAuthService {
         // =====================================================
         // ROLE CHECK
         // =====================================================
-
         String role =
-                user.getAdminRole().name();
+                user.getAdminRole() != null
+                        ? user.getAdminRole().name()
+                        : "";
 
-        if (
-
-                role == null ||
-
-                        !role.equalsIgnoreCase(
-                                "ROLE_ADMIN"
-                        )
-        ) {
+        if (!role.equalsIgnoreCase("ROLE_ADMIN")
+                && !role.equalsIgnoreCase("ROLE_OWNER")) {
 
             throw new ResponseStatusException(
 
@@ -439,7 +434,6 @@ public class AdminAuthService {
                     "Admin access denied"
             );
         }
-
         // =====================================================
         // STATUS CHECK
         // =====================================================

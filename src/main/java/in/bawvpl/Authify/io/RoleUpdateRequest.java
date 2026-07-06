@@ -11,4 +11,5 @@ public class RoleUpdateRequest {
      * OWNER
      */
     private String role;
+    private String roleChangeActionToken;
 }

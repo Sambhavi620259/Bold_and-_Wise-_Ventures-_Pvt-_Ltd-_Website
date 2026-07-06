@@ -62,7 +62,7 @@ public class ActivityController {
 // ADMIN ACTIVITY FEED
 // =====================================================
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
     @GetMapping("/admin")
     public ResponseEntity<ApiResponse<?>> adminActivities(
 

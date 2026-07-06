@@ -9,7 +9,7 @@ public class RegisterRequest {
     // ================= BASIC =================
 
     @NotBlank(message = "Entity type is required")
-    private String entityType; // INDIVIDUAL / ADMIN
+    private String entityType; // INDIVIDUAL / ORGANIZATION
 
     @NotBlank(message = "Name is required")
     private String name;
