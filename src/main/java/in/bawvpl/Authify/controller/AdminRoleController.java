@@ -73,13 +73,13 @@ public class AdminRoleController {
         );
     }
 
-    @PatchMapping("/users/{id}")
+    @PatchMapping("/users/{userId}")
     public ResponseEntity<?> updateRole(
 
             Principal principal,
 
             @PathVariable
-            Long id,
+            String userId,
 
             @RequestBody
             RoleUpdateRequest request
@@ -87,7 +87,7 @@ public class AdminRoleController {
 
         adminRoleService.changeRole(
                 getCurrentUser(principal),
-                id,
+                userId,
                 request.getRole()
         );
 

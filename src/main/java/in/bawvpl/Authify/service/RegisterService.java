@@ -240,9 +240,7 @@ public class RegisterService {
             // REFERRAL CODE
             // =====================================================
 
-            String referralCode =
-                    referralService
-                            .generateUniqueReferralCode();
+            String referralCode = userId;
 
             // =====================================================
             // VERIFICATION TOKEN

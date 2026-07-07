@@ -13,9 +13,10 @@ public interface AdminRoleService {
             String otp
     );
 
+
     void changeRole(
             UserEntity requestor,
-            Long targetUserId,
+            String targetUserId,
             String newRole
     );
 }

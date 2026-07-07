@@ -53,44 +53,46 @@ public class AdminUserService {
                                 )
                         );
 
-        newEmail = newEmail
-                .trim()
-                .toLowerCase();
+        newEmail = newEmail.trim().toLowerCase();
 
+        // Same email check
+        if (newEmail.equalsIgnoreCase(user.getEmail())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "New email must be different from current email"
+            );
+        }
+
+        // Existing email
         if (userRepository.existsByEmailIgnoreCase(newEmail)) {
-
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Email already exists"
             );
         }
 
+        // Pending email
         if (userRepository.existsByPendingEmailIgnoreCase(newEmail)) {
-
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "Email change already pending"
             );
         }
 
+        // Save pending email
         user.setPendingEmail(newEmail);
 
+        // Generate OTP
         otpService.generateEmailChangeOtp(user);
 
+        // Save user
         userRepository.save(user);
-        if (newEmail.equalsIgnoreCase(user.getEmail())) {
-
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "New email must be different from current email"
-            );
-        }
     }
-
     public void verifyEmailChangeOtp(
             String userId,
             String otp
     ) {
+
         UserEntity user =
                 userRepository
                         .findByUserId(userId)
@@ -100,6 +102,8 @@ public class AdminUserService {
                                         "User not found"
                                 )
                         );
+
+        // Check if an email change request exists
         if (user.getPendingEmail() == null ||
                 user.getPendingEmail().isBlank()) {
 
@@ -108,23 +112,34 @@ public class AdminUserService {
                     "No email change request found"
             );
         }
+
+        // Verify OTP
         otpService.verifyEmailChangeOtp(
                 user,
                 otp
         );
+
+        // Update email after successful OTP verification
         user.setEmail(
                 user.getPendingEmail()
         );
+
+        // Clear pending email, OTP and expiry
         user.clearPendingEmailChange();
+
+        // Invalidate authentication
         user.incrementTokenVersion();
-
         user.setRefreshToken(null);
+
+        // Save updated user
         userRepository.save(user);
+
+        // Logout all active sessions
         userSessionService.logoutAll(user.getId());
+
+        // Deactivate stored sessions
         userSessionRepository.deactivateAllByUserId(user.getId());
-
     }
-
     public void resendEmailChangeOtp(
             String userId
     ) {

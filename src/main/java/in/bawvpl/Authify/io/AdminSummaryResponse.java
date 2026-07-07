@@ -42,4 +42,10 @@ public class AdminSummaryResponse {
     // =====================================================
 
     private long openTickets;
+
+    private long adminCount;
+
+    private long ownerCount;
+
+    private long orgCount;
 }

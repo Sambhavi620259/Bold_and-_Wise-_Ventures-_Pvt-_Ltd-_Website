@@ -140,6 +140,41 @@ public class AdminDashboardService {
         }
 
         // =====================================================
+// ADMIN / OWNER / ORG COUNTS
+// =====================================================
+
+        long adminCount = 0;
+
+        long ownerCount = 0;
+
+        long orgCount = 0;
+
+        try {
+
+            adminCount =
+                    userRepository.countByAdminRole(
+                            AdminRole.ROLE_ADMIN
+                    );
+
+            ownerCount =
+                    userRepository.countByAdminRole(
+                            AdminRole.ROLE_OWNER
+                    );
+
+            orgCount =
+                    userRepository.countByEntityTypeIgnoreCase(
+                            "ORGANIZATION"
+                    );
+
+        } catch (Exception ex) {
+
+            log.error(
+                    "Failed to fetch admin/owner/org counts",
+                    ex
+            );
+        }
+
+        // =====================================================
         // RESPONSE
         // =====================================================
 
@@ -166,6 +201,19 @@ public class AdminDashboardService {
                 openTickets
         );
 
+        response.setAdminCount(
+                adminCount
+        );
+
+        response.setOwnerCount(
+                ownerCount
+        );
+
+        response.setOrgCount(
+                orgCount
+        );
+
         return response;
     }
+
 }

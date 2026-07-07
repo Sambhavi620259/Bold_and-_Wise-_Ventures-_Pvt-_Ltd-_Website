@@ -79,9 +79,7 @@ public class ReferralService {
         }
 
         newUser.setReferredBy(
-                String.valueOf(
-                        referrer.get().getEntityId()
-                )
+                referrer.get().getUserId()
         );
     }
 
@@ -90,11 +88,11 @@ public class ReferralService {
     // =====================================================
 
     public long getReferralCount(
-            Long entityId
+            String userId
     ) {
 
         return userRepository.countByReferredBy(
-                String.valueOf(entityId)
+                userId
         );
     }
 
@@ -103,12 +101,12 @@ public class ReferralService {
     // =====================================================
 
     public List<ReferralUserResponse> getReferralResponses(
-            Long entityId
+            String userId
     ) {
 
         return userRepository
                 .findByReferredBy(
-                        String.valueOf(entityId)
+                        userId
                 )
                 .stream()
                 .map(user ->

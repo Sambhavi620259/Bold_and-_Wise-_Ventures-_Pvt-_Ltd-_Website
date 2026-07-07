@@ -27,6 +27,8 @@ public class ReferralController {
     @Value("${app.frontend.url:http://localhost:5173}")
     private String frontendUrl;
 
+
+
     // =====================================================
     // MY REFERRAL INFO
     // =====================================================
@@ -65,7 +67,7 @@ public class ReferralController {
         response.put(
                 "referralCount",
                 referralService.getReferralCount(
-                        user.getEntityId()
+                        user.getUserId()
                 )
         );
 
@@ -105,7 +107,7 @@ public class ReferralController {
         response.put(
                 "data",
                 referralService.getReferralResponses(
-                        user.getEntityId()
+                        user.getUserId()
                 )
         );
 
@@ -129,13 +131,27 @@ public class ReferralController {
                         .findByEmailIgnoreCase(email)
                         .orElseThrow();
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "count",
-                        referralService.getReferralCount(
-                                user.getEntityId()
-                        )
+        Map<String, Object> response =
+                new HashMap<>();
+
+        response.put(
+                "success",
+                true
+        );
+
+        response.put(
+                "status",
+                200
+        );
+
+        response.put(
+                "count",
+                referralService.getReferralCount(
+                        user.getUserId()
                 )
         );
+
+        return ResponseEntity.ok(response);
     }
+
 }

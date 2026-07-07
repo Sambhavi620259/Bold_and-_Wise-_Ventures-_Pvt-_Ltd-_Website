@@ -39,6 +39,8 @@ public class AdminUserResponse {
 
     private String email;
 
+    private String pendingEmail;
+
     private String phoneNumber;
 
     // =====================================================

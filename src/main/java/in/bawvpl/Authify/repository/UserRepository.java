@@ -171,4 +171,12 @@ public interface UserRepository
     long countByAdminRole(
             AdminRole adminRole
     );
+
+    // =====================================================
+    // ORGANIZATION COUNT
+    // =====================================================
+
+    long countByEntityTypeIgnoreCase(
+            String entityType
+    );
 }

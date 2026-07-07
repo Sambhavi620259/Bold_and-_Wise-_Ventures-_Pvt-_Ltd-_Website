@@ -65,8 +65,13 @@ public class AdminRoleServiceImpl implements AdminRoleService {
     }
 
     @Override
-    public void changeRole(UserEntity requestor, Long targetUserId, String newRole) {
-        UserEntity target = userRepository.findById(targetUserId)
+    public void changeRole(
+            UserEntity requestor,
+            String targetUserId,
+            String newRole
+    ){
+        UserEntity target =
+                userRepository.findByUserId(targetUserId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "User not found"

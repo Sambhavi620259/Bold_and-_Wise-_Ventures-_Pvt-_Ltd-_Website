@@ -171,11 +171,11 @@ public class AdminUsersController {
 // UPDATE USER STATUS
 // =====================================================
 
-    @PatchMapping("/users/{id}/status")
+    @PatchMapping("/users/{userId}/status")
     public ResponseEntity<String> updateStatus(
 
             @PathVariable
-            Long id,
+            String userId,
 
             @Valid
             @RequestBody
@@ -184,7 +184,7 @@ public class AdminUsersController {
 
         UserEntity user =
                 userRepository
-                        .findById(id)
+                        .findByUserId(userId)
                         .orElseThrow(() ->
                                 new ResponseStatusException(
                                         HttpStatus.NOT_FOUND,
@@ -276,11 +276,11 @@ public class AdminUsersController {
     // UPDATE USER
     // =====================================================
 
-    @PutMapping("/users/{id}")
+    @PutMapping("/users/{userId}")
     public ResponseEntity<AdminUserResponse> updateUser(
 
             @PathVariable
-            Long id,
+            String userId,
 
             @Valid
             @RequestBody
@@ -289,7 +289,7 @@ public class AdminUsersController {
 
         UserEntity user =
                 userRepository
-                        .findById(id)
+                        .findByUserId(userId)
 
                         .orElseThrow(() ->
 
@@ -529,24 +529,8 @@ public class AdminUsersController {
                         ? kyc.getDrivingLicenseUrl()
                         : null;
 
-        String referredByUserId = null;
-
-        if (user.getReferredBy() != null) {
-
-            try {
-
-                Long referrerEntityId =
-                        Long.valueOf(user.getReferredBy());
-
-                referredByUserId =
-                        userRepository
-                                .findByEntityId(referrerEntityId)
-                                .map(UserEntity::getUserId)
-                                .orElse(null);
-
-            } catch (Exception ignored) {
-            }
-        }
+        String referredByUserId =
+                user.getReferredBy();
 
         String selfieUrl =
                 kyc != null
@@ -593,6 +577,8 @@ public class AdminUsersController {
                         .email(
                                 user.getEmail()
                         )
+
+                        .pendingEmail(user.getPendingEmail())
 
                         .phoneNumber(
                                 user.getPhoneNumber()
@@ -721,12 +707,12 @@ public class AdminUsersController {
         private String status;
     }
 
-    @PatchMapping("/users/{id}/role")
+    @PatchMapping("/users/{userId}/role")
     public ResponseEntity<?> updateRole(
 
             java.security.Principal principal,
 
-            @PathVariable Long id,
+            @PathVariable String userId,
 
             @RequestBody RoleUpdateRequest request
     ) {
@@ -743,7 +729,7 @@ public class AdminUsersController {
 
         adminRoleService.changeRole(
                 currentUser,
-                id,
+                userId,
                 request.getRole()
         );
 

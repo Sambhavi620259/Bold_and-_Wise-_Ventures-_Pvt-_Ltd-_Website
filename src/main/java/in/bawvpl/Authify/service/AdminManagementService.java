@@ -58,7 +58,11 @@ public class AdminManagementService {
         validateAccessToAdminEndpoint(requestor, "list admins");
 
         // FIX: Added repository call to retrieve paginated admin records
-        Page<UserEntity> admins = userRepository.findAll(pageable);
+        Page<UserEntity> admins =
+                userRepository.findByAdminRole(
+                        AdminRole.ROLE_ADMIN,
+                        pageable
+                );
 
         List<AdminResponse> content = admins.getContent()
                 .stream()
