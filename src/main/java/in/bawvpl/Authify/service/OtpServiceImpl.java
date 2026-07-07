@@ -201,10 +201,20 @@ public class OtpServiceImpl implements OtpService {
             );
         }
 
-        String email =
-                normalize(
-                        user.getEmail()
-                );
+        String email;
+
+        if ("EMAIL_CHANGE".equals(purpose)) {
+
+            email = normalize(
+                    user.getPendingEmail()
+            );
+
+        } else {
+
+            email = normalize(
+                    user.getEmail()
+            );
+        }
 
         String phone =
                 user.getPhoneNumber();
