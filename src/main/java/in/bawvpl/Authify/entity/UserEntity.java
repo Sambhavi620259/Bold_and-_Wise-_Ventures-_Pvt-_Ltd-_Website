@@ -195,11 +195,11 @@ public class UserEntity {
     // EMAIL CHANGE
     // =====================================================
 
-    @Column(name = "pending_email")
+    @Column(name = "pending_email", length = 150)
     private String pendingEmail;
 
     @JsonIgnore
-    @Column(name = "email_change_otp")
+    @Column(name = "email_change_otp", length = 10)
     private String emailChangeOtp;
 
     @Column(name = "email_change_expiry")
@@ -389,15 +389,8 @@ public class UserEntity {
                     generateUserId();
         }
 
-        if (
-
-                this.referralCode == null ||
-
-                        this.referralCode.isBlank()
-        ) {
-
-            this.referralCode =
-                    generateReferralCode();
+        if (this.referralCode == null || this.referralCode.isBlank()) {
+            this.referralCode = this.userId;
         }
 
         if (this.createdAt == null) {
@@ -625,12 +618,11 @@ public class UserEntity {
 
     private String generateReferralCode() {
 
-        return "REF" +
+        if (this.userId != null && !this.userId.isBlank()) {
+            return this.userId;
+        }
 
-                UUID.randomUUID()
-                        .toString()
-                        .substring(0, 8)
-                        .toUpperCase();
+        return generateUserId();
     }
 
     // =====================================================
@@ -799,5 +791,27 @@ public class UserEntity {
         }
 
         this.tokenVersion++;
+    }
+    // =====================================================
+// EMAIL CHANGE HELPERS
+// =====================================================
+
+    public void clearPendingEmailChange() {
+
+        this.pendingEmail = null;
+        this.emailChangeOtp = null;
+        this.emailChangeExpiry = null;
+    }
+
+    public boolean hasPendingEmailChange() {
+
+        return this.pendingEmail != null
+                && !this.pendingEmail.isBlank();
+    }
+
+    public boolean isEmailChangeOtpExpired() {
+
+        return this.emailChangeExpiry == null
+                || this.emailChangeExpiry.isBefore(LocalDateTime.now());
     }
 }

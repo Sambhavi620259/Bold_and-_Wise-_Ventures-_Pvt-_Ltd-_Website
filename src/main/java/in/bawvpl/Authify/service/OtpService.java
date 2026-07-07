@@ -87,4 +87,8 @@ public interface OtpService {
             UserEntity user,
             String otp
     );
+    String generateEmailChangeOtp(UserEntity user);
+
+    void verifyEmailChangeOtp(UserEntity user, String otp);
+
 }

@@ -51,6 +51,7 @@ public class OtpServiceImpl implements OtpService {
         );
     }
 
+
     // =====================================================
     // LOGIN
     // =====================================================
@@ -320,7 +321,11 @@ public class OtpServiceImpl implements OtpService {
                         otp
                 );
 
-            } else {
+            }
+            else if ("EMAIL_CHANGE".equals(purpose)) {
+                emailService.sendEmailChangeOtpEmail(email, otp);
+            }
+            else {
 
                 emailService.sendVerificationOtpEmail(
                         email,
@@ -430,10 +435,20 @@ public class OtpServiceImpl implements OtpService {
             );
         }
 
-        String email =
-                normalize(
-                        user.getEmail()
-                );
+        String email;
+
+        if ("EMAIL_CHANGE".equals(purpose)) {
+
+            email = normalize(
+                    user.getPendingEmail()
+            );
+
+        } else {
+
+            email = normalize(
+                    user.getEmail()
+            );
+        }
 
         OtpVerification entity =
 
@@ -636,4 +651,15 @@ public class OtpServiceImpl implements OtpService {
                 "ROLE_CHANGE_ACTION"
         );
     }
+    @Override
+    @Transactional
+    public String generateEmailChangeOtp(UserEntity user) {
+        return generate(user, "EMAIL_CHANGE");
+    }
+    @Override
+    @Transactional
+    public void verifyEmailChangeOtp(UserEntity user, String otp) {
+        validate(user, otp, "EMAIL_CHANGE");
+    }
+
 }

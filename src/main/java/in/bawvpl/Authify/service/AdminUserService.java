@@ -7,6 +7,7 @@ import in.bawvpl.Authify.io.AdminUser;
 
 import in.bawvpl.Authify.repository.UserRepository;
 
+import in.bawvpl.Authify.repository.UserSessionRepository;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
@@ -30,8 +31,127 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
-
+    private final OtpService otpService;
     private final UserRepository userRepository;
+    private final UserSessionService userSessionService;
+    private final UserSessionRepository userSessionRepository;
+    // =========================================
+    // EMAIL CHANGE
+    // =========================================
+    public void requestEmailChange(
+            String userId,
+            String newEmail
+    ) {
+
+        UserEntity user =
+                userRepository
+                        .findByUserId(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found"
+                                )
+                        );
+
+        newEmail = newEmail
+                .trim()
+                .toLowerCase();
+
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email already exists"
+            );
+        }
+
+        if (userRepository.existsByPendingEmailIgnoreCase(newEmail)) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Email change already pending"
+            );
+        }
+
+        user.setPendingEmail(newEmail);
+
+        otpService.generateEmailChangeOtp(user);
+
+        userRepository.save(user);
+        if (newEmail.equalsIgnoreCase(user.getEmail())) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "New email must be different from current email"
+            );
+        }
+    }
+
+    public void verifyEmailChangeOtp(
+            String userId,
+            String otp
+    ) {
+        UserEntity user =
+                userRepository
+                        .findByUserId(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found"
+                                )
+                        );
+        if (user.getPendingEmail() == null ||
+                user.getPendingEmail().isBlank()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "No email change request found"
+            );
+        }
+        otpService.verifyEmailChangeOtp(
+                user,
+                otp
+        );
+        user.setEmail(
+                user.getPendingEmail()
+        );
+        user.clearPendingEmailChange();
+        user.incrementTokenVersion();
+
+        user.setRefreshToken(null);
+        userRepository.save(user);
+        userSessionService.logoutAll(user.getId());
+        userSessionRepository.deactivateAllByUserId(user.getId());
+
+    }
+
+    public void resendEmailChangeOtp(
+            String userId
+    ) {
+        UserEntity user =
+                userRepository
+                        .findByUserId(userId)
+                        .orElseThrow(() ->
+                                new ResponseStatusException(
+                                        HttpStatus.NOT_FOUND,
+                                        "User not found"
+                                )
+                        );
+
+        if (user.getPendingEmail() == null ||
+                user.getPendingEmail().isBlank()) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "No pending email change found"
+            );
+        }
+
+        otpService.generateEmailChangeOtp(user);
+
+        userRepository.save(user);
+    }
+
 
     // =====================================================
     // TOTAL USERS
@@ -492,4 +612,5 @@ public class AdminUserService {
 
         userRepository.save(user);
     }
+
 }

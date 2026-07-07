@@ -2,12 +2,12 @@ package in.bawvpl.Authify.controller;
 
 import in.bawvpl.Authify.entity.*;
 
-import in.bawvpl.Authify.io.AdminUserResponse;
+import in.bawvpl.Authify.io.*;
 
-import in.bawvpl.Authify.io.RoleUpdateRequest;
 import in.bawvpl.Authify.repository.*;
 
 import in.bawvpl.Authify.service.AdminRoleService;
+import in.bawvpl.Authify.service.AdminUserService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 
@@ -19,8 +19,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import in.bawvpl.Authify.io.AdminUserHistoryResponse;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -31,6 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,6 +38,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 //@CrossOrigin("*")
 @PreAuthorize("hasAnyRole('ADMIN','OWNER')")
+
 public class AdminUsersController {
 
     private static final Set<String> VALID_STATUSES = Set.of(
@@ -59,6 +59,7 @@ public class AdminUsersController {
 
     private final UserSessionRepository userSessionRepository;
     private final AdminRoleService adminRoleService;
+    private final AdminUserService adminUserService;
     // =====================================================
     // GET USERS
     // IMPORTANT:
@@ -320,34 +321,7 @@ public class AdminUsersController {
         // UPDATE EMAIL
         // =====================================================
 
-        if (request.getEmail() != null &&
-                !request.getEmail().isBlank()) {
 
-            String email =
-                    request.getEmail()
-                            .trim()
-                            .toLowerCase();
-
-            if (userRepository.existsByEmailIgnoreCase(email)
-                    && !email.equalsIgnoreCase(user.getEmail())) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.CONFLICT,
-                        "Email already exists"
-                );
-            }
-
-            user.setEmail(email);
-
-            // Invalidate JWT
-            user.incrementTokenVersion();
-
-            // Remove refresh token
-            user.setRefreshToken(null);
-
-            // Logout all sessions
-            userSessionRepository.deactivateAllByUserId(user.getId());
-        }
 
         // =====================================================
         // UPDATE PHONE
@@ -781,5 +755,54 @@ public class AdminUsersController {
         );
     }
 
+    @PostMapping("/users/request-email-change")
+    public ResponseEntity<?> requestEmailChange(
+            @Valid @RequestBody EmailChangeRequest request
+    ) {
 
+        adminUserService.requestEmailChange(
+                request.getUserId(),
+                request.getNewEmail()
+        );
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "success", true,
+                        "message", "OTP sent successfully."
+                )
+        );
+    }
+    @PostMapping("/users/verify-email-change-otp")
+    public ResponseEntity<?> verifyEmailChangeOtp(
+            @Valid @RequestBody VerifyEmailChangeOtpRequest request
+    ) {
+
+        adminUserService.verifyEmailChangeOtp(
+                request.getUserId(),
+                request.getOtp()
+        );
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "success", true,
+                        "message", "Email updated successfully."
+                )
+        );
+    }
+    @PostMapping("/users/resend-email-change-otp")
+    public ResponseEntity<?> resendEmailChangeOtp(
+            @Valid @RequestBody ResendEmailChangeOtpRequest request
+    ) {
+
+        adminUserService.resendEmailChangeOtp(
+                request.getUserId()
+        );
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "success", true,
+                        "message", "OTP resent successfully."
+                )
+        );
+    }
 }

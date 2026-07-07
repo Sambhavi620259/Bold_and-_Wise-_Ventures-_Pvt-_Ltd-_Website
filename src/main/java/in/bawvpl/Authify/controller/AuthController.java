@@ -242,39 +242,17 @@ public class AuthController {
             ProfileRequest profileRequest =
                     ProfileRequest.builder()
 
-                            .name(
-                                    request.getName()
-                            )
+                            .entityType(request.getEntityType())   // <-- ADD THIS
 
+                            .name(request.getName())
                             .email(email)
-
-                            .phoneNumber(
-                                    request.getPhoneNumber()
-                            )
-
-                            .password(
-                                    request.getPassword()
-                            )
-
-                            .address(
-                                    request.getAddress()
-                            )
-
-                            .referralCode(
-                                    request.getReferralCode()
-                            )
-
-                            .documentType(
-                                    request.getDocumentType()
-                            )
-
-                            .documentNumber(
-                                    request.getDocumentNumber()
-                            )
-
-                            .filePath(
-                                    uploadedFileUrl
-                            )
+                            .phoneNumber(request.getPhoneNumber())
+                            .password(request.getPassword())
+                            .address(request.getAddress())
+                            .referralCode(request.getReferralCode())
+                            .documentType(request.getDocumentType())
+                            .documentNumber(request.getDocumentNumber())
+                            .filePath(uploadedFileUrl)
 
                             .build();
 
@@ -588,7 +566,7 @@ public class AuthController {
                         .body(
                                 Map.of(
 
-                                        "success", false,
+                                         "success", false,
 
                                         "message",
                                         "Please verify your email first"

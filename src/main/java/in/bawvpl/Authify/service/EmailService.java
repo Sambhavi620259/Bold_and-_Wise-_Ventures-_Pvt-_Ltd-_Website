@@ -22,6 +22,7 @@ public class EmailService {
     @Value("${spring.mail.from:no-reply@authify.com}")
     private String from;
 
+
     // =====================================================
     // COMMON HTML EMAIL SENDER
     // =====================================================
@@ -513,6 +514,26 @@ public class EmailService {
                 to,
                 "Admin Invitation",
                 html
+        );
+    }
+    // =====================================================
+// EMAIL CHANGE OTP
+// =====================================================
+
+    public void sendEmailChangeOtpEmail(
+
+            String to,
+
+            String otp
+    ) {
+
+        sendOtpEmail(
+
+                to,
+
+                "Email Change Verification OTP",
+
+                otp
         );
     }
 }
