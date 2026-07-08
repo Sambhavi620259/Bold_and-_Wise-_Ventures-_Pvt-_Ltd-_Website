@@ -59,10 +59,7 @@ public class AdminManagementService {
 
         // FIX: Added repository call to retrieve paginated admin records
         Page<UserEntity> admins =
-                userRepository.findByAdminRole(
-                        AdminRole.ROLE_ADMIN,
-                        pageable
-                );
+                userRepository.findAll(pageable);
 
         List<AdminResponse> content = admins.getContent()
                 .stream()

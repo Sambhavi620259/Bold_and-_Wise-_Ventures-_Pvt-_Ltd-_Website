@@ -67,7 +67,7 @@ public class ReferralController {
         response.put(
                 "referralCount",
                 referralService.getReferralCount(
-                        user.getUserId()
+                        user.getReferralCode()
                 )
         );
 
@@ -107,7 +107,7 @@ public class ReferralController {
         response.put(
                 "data",
                 referralService.getReferralResponses(
-                        user.getUserId()
+                        user.getReferralCode()
                 )
         );
 
@@ -144,10 +144,11 @@ public class ReferralController {
                 200
         );
 
+
         response.put(
                 "count",
                 referralService.getReferralCount(
-                        user.getUserId()
+                        user.getReferralCode()
                 )
         );
 

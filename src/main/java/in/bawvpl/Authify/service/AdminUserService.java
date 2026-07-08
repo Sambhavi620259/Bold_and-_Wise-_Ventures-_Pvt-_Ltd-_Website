@@ -5,11 +5,13 @@ import in.bawvpl.Authify.entity.UserStatus;
 
 import in.bawvpl.Authify.io.AdminUser;
 
+import in.bawvpl.Authify.io.AdminUserResponse;
 import in.bawvpl.Authify.repository.UserRepository;
 
 import in.bawvpl.Authify.repository.UserSessionRepository;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 
 import org.springframework.stereotype.Service;
@@ -27,7 +29,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
+import in.bawvpl.Authify.entity.AdminRole;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 @Service
 @RequiredArgsConstructor
 public class AdminUserService {
@@ -35,6 +40,92 @@ public class AdminUserService {
     private final UserRepository userRepository;
     private final UserSessionService userSessionService;
     private final UserSessionRepository userSessionRepository;
+
+    public Page<AdminUserResponse> getAdmins(
+            int page,
+            int size
+    ) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<UserEntity> admins =
+                userRepository.findByAdminRole(
+                        AdminRole.ROLE_ADMIN,
+                        pageable
+                );
+
+        List<AdminUserResponse> response =
+                admins.getContent()
+                        .stream()
+                        .map(user ->
+                                AdminUserResponse.builder()
+                                        .id(user.getId())
+                                        .userId(user.getUserId())
+                                        .name(user.getEntityName())
+                                        .fullName(user.getEntityName())
+                                        .email(user.getEmail())
+                                        .phoneNumber(user.getPhoneNumber())
+                                        .role(user.getAdminRole().name())
+                                        .status(
+                                                user.getUserStatus() != null
+                                                        ? user.getUserStatus().name()
+                                                        : "ACTIVE"
+                                        )
+                                        .entityType(user.getEntityType())
+                                        .createdAt(user.getCreatedAt())
+                                        .build()
+                        )
+                        .toList();
+
+        return new PageImpl<>(
+                response,
+                pageable,
+                admins.getTotalElements()
+        );
+    }
+
+    public Page<AdminUserResponse> getOwners(
+            int page,
+            int size
+    ) {
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<UserEntity> owners =
+                userRepository.findByAdminRole(
+                        AdminRole.ROLE_OWNER,
+                        pageable
+                );
+
+        List<AdminUserResponse> response =
+                owners.getContent()
+                        .stream()
+                        .map(user ->
+                                AdminUserResponse.builder()
+                                        .id(user.getId())
+                                        .userId(user.getUserId())
+                                        .name(user.getEntityName())
+                                        .fullName(user.getEntityName())
+                                        .email(user.getEmail())
+                                        .phoneNumber(user.getPhoneNumber())
+                                        .role(user.getAdminRole().name())
+                                        .status(
+                                                user.getUserStatus() != null
+                                                        ? user.getUserStatus().name()
+                                                        : "ACTIVE"
+                                        )
+                                        .entityType(user.getEntityType())
+                                        .createdAt(user.getCreatedAt())
+                                        .build()
+                        )
+                        .toList();
+
+        return new PageImpl<>(
+                response,
+                pageable,
+                owners.getTotalElements()
+        );
+    }
     // =========================================
     // EMAIL CHANGE
     // =========================================
@@ -446,16 +537,14 @@ public class AdminUserService {
     // =====================================================
 
     public AdminUser updateUser(
-
-            Long id,
-
+            String userId,
             Map<String, Object> body
     ) {
 
         UserEntity user =
 
                 userRepository
-                        .findById(id)
+                        .findByUserId(userId)
 
                         .orElseThrow(() ->
 
@@ -596,7 +685,7 @@ public class AdminUserService {
 
     public void updateUserStatus(
 
-            Long id,
+            String userId,
 
             boolean active
     ) {
@@ -604,8 +693,7 @@ public class AdminUserService {
         UserEntity user =
 
                 userRepository
-                        .findById(id)
-
+                        .findByUserId(userId)
                         .orElseThrow(() ->
 
                                 new ResponseStatusException(

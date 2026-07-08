@@ -223,10 +223,11 @@ public class RegisterService {
             // USER ID
             // =====================================================
 
-            String prefix =
-                    "ORGANIZATION".equalsIgnoreCase(entityType)
-                            ? "ORG-"
-                            : "USR-";
+            String prefix = "USR-";
+
+            if ("ORGANIZATION".equalsIgnoreCase(req.getEntityType())) {
+                prefix = "ORG-";
+            }
 
             String userId =
                     prefix +
@@ -235,6 +236,8 @@ public class RegisterService {
                                     .replace("-", "")
                                     .substring(0, 8)
                                     .toUpperCase();
+
+
 
             // =====================================================
             // REFERRAL CODE

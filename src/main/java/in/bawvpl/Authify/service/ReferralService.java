@@ -16,6 +16,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ReferralService {
 
+    private static final String FOUNDER_REFERRAL_CODE = "BWVPL#26";
+
     private final UserRepository userRepository;
 
     // =====================================================
@@ -27,7 +29,6 @@ public class ReferralService {
         String code;
 
         do {
-
             code =
                     "REF-" +
                             UUID.randomUUID()
@@ -36,11 +37,7 @@ public class ReferralService {
                                     .substring(0, 8)
                                     .toUpperCase();
 
-        } while (
-                userRepository
-                        .findByReferralCode(code)
-                        .isPresent()
-        );
+        } while (userRepository.findByReferralCode(code).isPresent());
 
         return code;
     }
@@ -54,12 +51,11 @@ public class ReferralService {
             String referralCode
     ) {
 
-        // Founder default referral
         if (referralCode == null || referralCode.isBlank()) {
-            referralCode = "BWVPL#26";
+            referralCode = FOUNDER_REFERRAL_CODE;
         }
 
-        referralCode = referralCode.trim();
+        referralCode = referralCode.trim().toUpperCase();
 
         Optional<UserEntity> referrer =
                 userRepository.findByReferralCode(referralCode);
@@ -78,8 +74,9 @@ public class ReferralService {
             return;
         }
 
+        // Store referral code
         newUser.setReferredBy(
-                referrer.get().getUserId()
+                referrer.get().getReferralCode()
         );
     }
 
@@ -88,11 +85,11 @@ public class ReferralService {
     // =====================================================
 
     public long getReferralCount(
-            String userId
+            String referralCode
     ) {
 
         return userRepository.countByReferredBy(
-                userId
+                referralCode
         );
     }
 
@@ -101,22 +98,16 @@ public class ReferralService {
     // =====================================================
 
     public List<ReferralUserResponse> getReferralResponses(
-            String userId
+            String referralCode
     ) {
 
         return userRepository
-                .findByReferredBy(
-                        userId
-                )
+                .findByReferredBy(referralCode)
                 .stream()
                 .map(user ->
                         ReferralUserResponse.builder()
-                                .userId(
-                                        user.getUserId()
-                                )
-                                .fullName(
-                                        user.getDisplayName()
-                                )
+                                .userId(user.getUserId())
+                                .fullName(user.getDisplayName())
                                 .build()
                 )
                 .toList();

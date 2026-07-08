@@ -106,11 +106,12 @@ public class AdminDashboardController {
 // UPDATE USER
 // =====================================================
 
-    @PatchMapping("/users/{id}")
+
+    @PatchMapping("/users/{userId}")
     public AdminApiResponse<?> updateUser(
 
             @PathVariable
-            Long id,
+            String userId,
 
             @RequestBody
             java.util.Map<String, Object> body
@@ -120,7 +121,7 @@ public class AdminDashboardController {
 
                 userService.updateUser(
 
-                        id,
+                        userId,
 
                         body
                 )

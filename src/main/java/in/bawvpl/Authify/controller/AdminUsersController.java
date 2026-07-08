@@ -167,6 +167,36 @@ public class AdminUsersController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/users/admins")
+    public ResponseEntity<Page<AdminUserResponse>> getAdmins(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "20")
+            int size
+    ) {
+
+        return ResponseEntity.ok(
+                adminUserService.getAdmins(page, size)
+        );
+    }
+
+    @GetMapping("/users/owners")
+    public ResponseEntity<Page<AdminUserResponse>> getOwners(
+
+            @RequestParam(defaultValue = "0")
+            int page,
+
+            @RequestParam(defaultValue = "20")
+            int size
+    ) {
+
+        return ResponseEntity.ok(
+                adminUserService.getOwners(page, size)
+        );
+    }
+
     // =====================================================
 // UPDATE USER STATUS
 // =====================================================
