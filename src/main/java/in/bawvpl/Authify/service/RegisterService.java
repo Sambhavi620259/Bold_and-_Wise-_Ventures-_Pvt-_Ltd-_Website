@@ -243,7 +243,10 @@ public class RegisterService {
             // REFERRAL CODE
             // =====================================================
 
-            String referralCode = userId;
+            String referralCode =
+                    referralService.generateUniqueReferralCode(
+                            entityType
+                    );
 
             // =====================================================
             // VERIFICATION TOKEN
@@ -364,45 +367,18 @@ public class RegisterService {
             // REFERRAL
             // =====================================================
 
-            String refCode = "BWVPL#26";
 
-            if (req.getReferralCode() != null &&
-                    !req.getReferralCode().isBlank()) {
+            String refCode =
+                    referralService.resolveReferralValue(
+                            req.getReferralCode()
+                    );
 
-                refCode = req.getReferralCode().trim();
-            }
+            referralService.applyReferral(
+                    user,
+                    refCode
+            );
 
-            Optional<UserEntity> refUser =
-                    userRepository.findByReferralCode(refCode);
 
-            if (refUser.isEmpty()) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Invalid referral code"
-                );
-            }
-
-            UserEntity referrer = refUser.get();
-
-            if (referrer.getEmail().equalsIgnoreCase(email)) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Self referral not allowed"
-                );
-            }
-
-            if (referrer.getPhoneNumber() != null &&
-                    referrer.getPhoneNumber().equals(phone)) {
-
-                throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Self referral not allowed"
-                );
-            }
-
-            referralService.applyReferral(user, refCode);
             // =====================================================
             // SAVE USER
             // =====================================================

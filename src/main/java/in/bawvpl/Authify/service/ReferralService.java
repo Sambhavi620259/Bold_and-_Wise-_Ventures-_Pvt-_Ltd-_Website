@@ -6,7 +6,9 @@ import in.bawvpl.Authify.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,22 +26,59 @@ public class ReferralService {
     // GENERATE UNIQUE REFERRAL CODE
     // =====================================================
 
-    public String generateUniqueReferralCode() {
+    public String generateUniqueReferralCode(String entityType) {
+
+        String prefix =
+                "ORGANIZATION".equalsIgnoreCase(entityType)
+                        ? "ORG-"
+                        : "USR-";
 
         String code;
 
         do {
+
             code =
-                    "REF-" +
+                    prefix +
                             UUID.randomUUID()
                                     .toString()
                                     .replace("-", "")
                                     .substring(0, 8)
                                     .toUpperCase();
 
-        } while (userRepository.findByReferralCode(code).isPresent());
+        } while (userRepository.existsByReferralCode(code));
 
         return code;
+    }
+
+    public String resolveReferralValue(String value) {
+
+        if (value == null || value.isBlank()) {
+            return FOUNDER_REFERRAL_CODE;
+        }
+
+        value = value.trim();
+
+        if (value.equalsIgnoreCase(FOUNDER_REFERRAL_CODE)) {
+            return FOUNDER_REFERRAL_CODE;
+        }
+
+        if (value.toUpperCase().startsWith("USR-")) {
+            return value.toUpperCase();
+        }
+
+        if (value.toUpperCase().startsWith("ORG-")) {
+            return value.toUpperCase();
+        }
+
+        Optional<UserEntity> user =
+                userRepository.findByUserId(value);
+
+        if (user.isPresent()) {
+            return user.get().getReferralCode();
+        }
+
+// Unknown value - let applyReferral() validate it
+        return value.toUpperCase();
     }
 
     // =====================================================
@@ -51,32 +90,64 @@ public class ReferralService {
             String referralCode
     ) {
 
+        // No referral supplied
         if (referralCode == null || referralCode.isBlank()) {
-            referralCode = FOUNDER_REFERRAL_CODE;
+
+            newUser.setReferredBy(
+                    FOUNDER_REFERRAL_CODE
+            );
+
+            return;
         }
 
         referralCode = referralCode.trim().toUpperCase();
 
         Optional<UserEntity> referrer =
-                userRepository.findByReferralCode(referralCode);
+                userRepository.findByReferralCode(
+                        referralCode
+                );
 
         if (referrer.isEmpty()) {
-            return;
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Invalid referral code"
+            );
         }
 
-        // Prevent self-referral
+        UserEntity referrerUser = referrer.get();
+
+        // Prevent self referral by email
         if (
                 newUser.getEmail() != null &&
                         newUser.getEmail().equalsIgnoreCase(
-                                referrer.get().getEmail()
+                                referrerUser.getEmail()
                         )
         ) {
-            return;
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Self referral is not allowed"
+            );
         }
 
-        // Store referral code
+        // Prevent self referral by phone
+        if (
+                newUser.getPhoneNumber() != null &&
+                        referrerUser.getPhoneNumber() != null &&
+                        newUser.getPhoneNumber().equals(
+                                referrerUser.getPhoneNumber()
+                        )
+        ) {
+
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Self referral is not allowed"
+            );
+        }
+
         newUser.setReferredBy(
-                referrer.get().getReferralCode()
+                referrerUser.getReferralCode()
         );
     }
 

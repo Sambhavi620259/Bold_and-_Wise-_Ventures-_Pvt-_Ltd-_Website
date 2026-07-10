@@ -176,10 +176,10 @@ public class AuthController {
                 );
             }
 
-                String email =
-                        request.getEmail()
-                                .trim()
-                                .toLowerCase();
+            String email =
+                    request.getEmail()
+                            .trim()
+                            .toLowerCase();
             if(loginAttemptService.isBlocked(email)){
 
                 return ResponseEntity
@@ -566,7 +566,7 @@ public class AuthController {
                         .body(
                                 Map.of(
 
-                                         "success", false,
+                                        "success", false,
 
                                         "message",
                                         "Please verify your email first"

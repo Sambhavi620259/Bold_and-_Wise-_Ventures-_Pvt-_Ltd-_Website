@@ -3,8 +3,8 @@ package in.bawvpl.Authify.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import in.bawvpl.Authify.converter.EncryptionConverter;
 import jakarta.persistence.*;
-import in.bawvpl.Authify.entity.AdminRole;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -112,17 +112,21 @@ public class UserEntity {
     )
     private String entityType;
 
+    @Convert(converter = EncryptionConverter.class, disableConversion = false)
     @Column(
             name = "entity_name",
-            length = 150
+            length = 500
     )
     private String entityName;
 
+
+    @Convert(converter = EncryptionConverter.class)
     @Column(
             name = "contact_person",
-            length = 100
+            length = 500
     )
     private String contactPerson;
+
 
     @Column(
             nullable = false,
@@ -245,8 +249,10 @@ public class UserEntity {
     // ADDRESS
     // =====================================================
 
+    @Convert(converter = EncryptionConverter.class)
     @Column(length = 500)
     private String address;
+
 
     // =====================================================
     // REFERRAL
@@ -814,4 +820,6 @@ public class UserEntity {
         return this.emailChangeExpiry == null
                 || this.emailChangeExpiry.isBefore(LocalDateTime.now());
     }
+
+
 }
