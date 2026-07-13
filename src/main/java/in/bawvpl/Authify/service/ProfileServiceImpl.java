@@ -279,7 +279,10 @@ public class ProfileServiceImpl implements ProfileService {
                     "Invalid referral code"
             );
         }
-
+        System.out.println("========== BEFORE SAVE ==========");
+        System.out.println("Saving user...");
+        System.out.println("Entity Name = " + user.getEntityName());
+        System.out.println("Address = " + user.getAddress());
         user =
                 userRepository.save(user);
 
@@ -287,6 +290,7 @@ public class ProfileServiceImpl implements ProfileService {
 
         user =
                 userRepository.save(user);
+        System.out.println("========== AFTER SAVE ==========");
         // =====================================================
         // KYC
         // =====================================================

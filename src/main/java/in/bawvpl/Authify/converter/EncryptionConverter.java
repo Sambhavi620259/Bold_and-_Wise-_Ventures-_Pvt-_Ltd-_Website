@@ -10,9 +10,13 @@ import java.util.Base64;
 
 @Converter
 public class EncryptionConverter implements AttributeConverter<String, String> {
-
+    static {
+        System.out.println("******** EncryptionConverter Loaded ********");
+    }
     private static final String SECRET_KEY =
             "12345678901234567890123456789012";
+
+
 
     @Override
     public String convertToDatabaseColumn(String value) {
